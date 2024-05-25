@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Chefster")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7711584fc00734ad9a0724ac35fcdd3d35473590")]
 [assembly: System.Reflection.AssemblyProductAttribute("Chefster")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Chefster")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
