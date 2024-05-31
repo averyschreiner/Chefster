@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="text-center">
+    <ul>
+        <li>
+            Here will be the page were users can chat with Gordon, the underlying AI assistant that will generate recipes.
+        </li>
+        <li>
+            User's can chat about temporary information (weekly notes) or permanent information such as info in their profile (number of mouths, permanent preferences, etc)
+        </li>
+        <h3>Profile Changes</h3>
+        <li>
+            An example of a profile update would be if the user mentions that one of their children is moving off to college. We would decrement their family count by one.
+            Users would of course be able to go directly to their profile and change that information there but this is just an indirect way of doing that.
+            Profile changes should require user confirmation before updating their profile. This confirmation would be a message from Gordon along the lines of "I can change your profile to show that
+            your family size is now 3 instead of 4, would you like me to do that?"
+        </li>
+        <h3>Weekly Notes</h3>
+        <li>
+            Users will be able to suggest meals for the upcoming week, express preferences/cravings, inform Gordon of abnormalities in this weeks eating schedule
+            such as plans to go out for one night (no recipe needed for that night), etc.
+        </li>
+        <li>
+            Behind the scenes, Gordon will just "take notes" of what the user is saying, sort of summarizing their requirements for the week. This info will be stored
+            under that user and will be taken into consideration upon recipe generation. These "notes" will be cleared after recipes have been generated for each week.
+        </li>
+        <li>
+            This page be treated the same as receiving emails / texts from a user, just another option for interaction.
+        </li>
+    </ul>
+</div>

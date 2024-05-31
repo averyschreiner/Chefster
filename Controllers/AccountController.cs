@@ -9,7 +9,7 @@ public class AccountController : Controller
     public async Task LogIn()
     {
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-            .WithRedirectUri(Url.Action("AfterLogIn", "Account"))
+            .WithRedirectUri(Url.Action("Chat", "Index"))
             .Build();
 
         await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
@@ -19,7 +19,7 @@ public class AccountController : Controller
     public async Task LogOut()
     {
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
-            .WithRedirectUri(Url.Action("Index", "Home"))
+            .WithRedirectUri(Url.Action("Index", "Index"))
             .Build();
 
         await HttpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
@@ -30,21 +30,9 @@ public class AccountController : Controller
     {
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithParameter("screen_hint", "signup")
-            .WithRedirectUri(Url.Action("AfterSignUp", "Account"))
+            .WithRedirectUri(Url.Action("CreateProfile", "Index"))
             .Build();
 
         await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
-    }
-
-    [Authorize]
-    public IActionResult AfterSignUp()
-    {
-        return View();
-    }
-
-    [Authorize]
-    public IActionResult AfterLogIn()
-    {
-        return View();
     }
 }
