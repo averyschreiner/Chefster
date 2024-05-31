@@ -15,7 +15,14 @@ public class IndexController : Controller
     }
 
     [Authorize]
+    [Route("/chat")]
     public IActionResult Chat()
+    {
+        return View();
+    }
+
+    [Authorize]
+    public IActionResult CreateProfile()
     {
         return View();
     }
@@ -31,12 +38,14 @@ public class IndexController : Controller
         return View();
     }
 
+    [Route("/privacy")]
     public IActionResult Privacy()
     {
         return View();
     }
 
     [Authorize]
+    [Route("/profile")]
     public IActionResult Profile()
     {
         return View();
