@@ -17,7 +17,7 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 {
     options.Domain = Environment.GetEnvironmentVariable("AUTH_DOMAIN");
     options.ClientId = Environment.GetEnvironmentVariable("AUTH_CLIENT_ID");
-    options.CallbackPath = "/account/callback";
+    //options.CallbackPath = "/account/callback";
 });
 
 builder.Services.AddControllersWithViews();
