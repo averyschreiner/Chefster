@@ -1,8 +1,6 @@
-using Chefster.Models;
-
 namespace Chefster.Models;
 
-public class UserModel
+public class FamilyModel
 {
     public required string id;
     public string? email;

@@ -1,5 +1,9 @@
-using Chefster;
 using Auth0.AspNetCore.Authentication;
+using Chefster;
+using Chefster.Context;
+using Chefster.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,14 +17,33 @@ catch (Exception ex)
     Console.WriteLine($"Error loading .env file: {ex.Message}");
 }
 
-builder.Services.AddAuth0WebAppAuthentication(options => 
+var domain = Environment.GetEnvironmentVariable("AUTH_DOMAIN");
+var clientId = Environment.GetEnvironmentVariable("AUTH_CLIENT_ID");
+builder.Services.AddAuth0WebAppAuthentication(options =>
 {
-    options.Domain = Environment.GetEnvironmentVariable("AUTH_DOMAIN");
-    options.ClientId = Environment.GetEnvironmentVariable("AUTH_CLIENT_ID");
+    if (domain != null && clientId != null)
+    {
+        options.Domain = domain;
+        options.ClientId = clientId;
+    }
     //options.CallbackPath = "/account/callback";
 });
 
+var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");
+builder.Services.AddDbContext<FamilyDbContext>(options =>
+{
+    options.UseSqlServer(connString);
+});
+
+builder.Services.AddScoped<FamilyService>();
+builder.Services.AddControllers();
+
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chefster Backend", Version = "v1" });
+});
 
 var app = builder.Build();
 
@@ -30,6 +53,17 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+
+var isProd = Environment.GetEnvironmentVariable("IS_PROD");
+if (isProd == "false")
+{
+    Console.WriteLine("WE ARE IN DEVELOPMENT!");
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Chefster Backend");
+    });
 }
 
 app.UseHttpsRedirection();
@@ -42,8 +76,6 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Index}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
 
 app.Run();

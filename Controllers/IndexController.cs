@@ -5,6 +5,8 @@ using System.Diagnostics;
 
 namespace Chefster.Controllers;
 
+// use this to make swagger ignore this controller if its not really an api
+[ApiExplorerSettings(IgnoreApi = true)]
 public class IndexController : Controller
 {
     private readonly ILogger<IndexController> _logger;
