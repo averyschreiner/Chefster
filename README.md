@@ -1,1 +1,3 @@
+# Chefster
+
 Recipe generation automation
