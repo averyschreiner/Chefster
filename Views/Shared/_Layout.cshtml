@@ -32,9 +32,16 @@
                             <a class="nav-link text-dark" asp-controller="Index" asp-action="Profile">Profile</a>
                         </li>
                     </ul>
-                    <div class="d-flex" role="search">
+                    <div class="d-flex">
                         @if(User.Identity.IsAuthenticated)
                         {
+                            var profilePicture = User.Claims.FirstOrDefault(claim => claim.Type == "picture")?.Value;
+
+                            <img src="@profilePicture" class="rounded-circle my-1" style="width: 30px; height: 30px;">
+                            <div>
+                                <div class="vr d-none d-lg-flex h-100 mx-lg-2 text-black"></div>
+                                <hr class="d-lg-none my-2 text-black-50">
+                            </div>
                             <form asp-controller="Account" asp-action="LogOut">
                                 <button class="btn btn-outline-secondary" type="submit">Log Out</button>
                             </form>

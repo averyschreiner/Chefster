@@ -17,7 +17,6 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 {
     options.Domain = Environment.GetEnvironmentVariable("AUTH_DOMAIN");
     options.ClientId = Environment.GetEnvironmentVariable("AUTH_CLIENT_ID");
-    options.CallbackPath = "/account/callback";
 });
 
 builder.Services.AddControllersWithViews();
@@ -27,9 +26,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
