@@ -33,7 +33,7 @@ public class FamilyController(FamilyService familyService) : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<FamilyModel> CreateFamily([FromBody] FamilyModel family)
+    public ActionResult CreateFamily([FromBody] FamilyModel family)
     {
         var created = _familyService.CreateFamily(family);
 
@@ -42,7 +42,7 @@ public class FamilyController(FamilyService familyService) : ControllerBase
             return BadRequest($"Error: {created.Error}");
         }
 
-        return Ok(created.Data);
+        return Ok("Created Family Successfully");
     }
 
     [HttpDelete("{Id}")]

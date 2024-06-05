@@ -1,7 +1,7 @@
+using Chefster.Common;
 using Chefster.Context;
 using Chefster.Interfaces;
 using Chefster.Models;
-using Chefster.Common;
 using Microsoft.Data.SqlClient;
 
 namespace Chefster.Services;
@@ -12,17 +12,18 @@ public class FamilyService(FamilyDbContext context) : IFamily
 
     public ServiceResult<FamilyModel> CreateFamily(FamilyModel family)
     {
-        var fam = _context.FamilyModels.Find(family.id);
+        var fam = _context.FamilyModels.Find(family.Id);
 
         if (fam != null)
         {
             return ServiceResult<FamilyModel>.ErrorResult("Family Already Exists");
         }
 
-        family.createdAt = DateTime.UtcNow.ToString();
+        family.CreatedAt = DateTime.UtcNow.ToString();
 
         try
         {
+            Console.WriteLine($"FROM SERVICE: {family.Id}");
             _context.FamilyModels.Add(family);
             _context.SaveChanges(); // Save changes to database after altering it
             return ServiceResult<FamilyModel>.SuccessResult(family);
@@ -88,19 +89,19 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            var existingFam = _context.FamilyModels.Find(family.id);
+            var existingFam = _context.FamilyModels.Find(family.Id);
             if (existingFam == null)
             {
                 return ServiceResult<FamilyModel>.ErrorResult("Family does not exist");
             }
 
             // update everything even if it wasnt changed. Not the most efficient, but works.
-            existingFam.email = family.email;
-            existingFam.phoneNumber = family.phoneNumber;
-            existingFam.familySize = family.familySize;
-            existingFam.members = family.members;
-            existingFam.weeklyNotes = family.weeklyNotes;
-            
+            existingFam.Email = family.Email;
+            existingFam.PhoneNumber = family.PhoneNumber;
+            existingFam.FamilySize = family.FamilySize;
+            existingFam.Members = family.Members;
+            existingFam.WeeklyNotes = family.WeeklyNotes;
+
             // we've edited the item in context, now just save it
             _context.SaveChanges();
             // return existing family since it should be the same as the new one "family"
