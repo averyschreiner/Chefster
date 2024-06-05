@@ -13,13 +13,13 @@ public class FamilyController(FamilyService familyService) : ControllerBase
     private readonly FamilyService _familyService = familyService;
 
     [HttpGet("{Id}")]
-    public ActionResult<FamilyModel> GetFamily(string id)
+    public ActionResult<FamilyModel> GetFamily(string Id)
     {
-        var family = _familyService.GetById(id);
+        var family = _familyService.GetById(Id);
 
         if (family == null)
         {
-            return NotFound(new { Message = $"No family found with familyId {id}" });
+            return NotFound(new { Message = $"No family found with familyId {Id}" });
         }
 
         return Ok(family.Data);
@@ -46,9 +46,9 @@ public class FamilyController(FamilyService familyService) : ControllerBase
     }
 
     [HttpDelete("{Id}")]
-    public ActionResult DeleteFamily(string id)
+    public ActionResult DeleteFamily(string Id)
     {
-        var deleted = _familyService.DeleteFamily(id);
+        var deleted = _familyService.DeleteFamily(Id);
 
         if (!deleted.Success)
         {

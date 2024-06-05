@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Chefster.Context;
 
-public class FamilyDbContext(DbContextOptions<FamilyDbContext> options) : DbContext(options)
+public class WeeklyNotesDbContext(DbContextOptions<WeeklyNotesDbContext> options) : DbContext(options)
 {    
-    public DbSet<FamilyModel> Families { get; set; }
+    public DbSet<WeeklyNotesModel> WeeklyNotes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder options)
     {
         // we can set restraints here like max attribute length, required or not, etc
-        options.Entity<FamilyModel>().HasKey(e =>  e.Id).HasName("PK_FamilyModels");
+        options.Entity<FamilyModel>().HasKey(e =>  e.Id).HasName("PK_weeklyNotes");
     }
 }

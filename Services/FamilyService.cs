@@ -12,10 +12,13 @@ public class FamilyService(FamilyDbContext context) : IFamily
 
     public ServiceResult<FamilyModel> CreateFamily(FamilyModel family)
     {
-        var fam = _context.FamilyModels.Find(family.Id);
+        var fam = _context.Families.Find(family.Id);
+
+        Console.WriteLine($"FROM CREATE: {family.Id}");
 
         if (fam != null)
         {
+            Console.WriteLine($"{fam.CreatedAt}");
             return ServiceResult<FamilyModel>.ErrorResult("Family Already Exists");
         }
 
@@ -23,8 +26,7 @@ public class FamilyService(FamilyDbContext context) : IFamily
 
         try
         {
-            Console.WriteLine($"FROM SERVICE: {family.Id}");
-            _context.FamilyModels.Add(family);
+            _context.Families.Add(family);
             _context.SaveChanges(); // Save changes to database after altering it
             return ServiceResult<FamilyModel>.SuccessResult(family);
         }
@@ -40,7 +42,8 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            var fam = _context.FamilyModels.Find(id);
+            Console.WriteLine($"FROM DELETE: {id}");
+            var fam = _context.Families.Find(id);
             if (fam == null)
             {
                 return ServiceResult<FamilyModel>.ErrorResult("Family doesn't exist");
@@ -61,7 +64,7 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            return ServiceResult<List<FamilyModel>>.SuccessResult(_context.FamilyModels.ToList());
+            return ServiceResult<List<FamilyModel>>.SuccessResult(_context.Families.ToList());
         }
         catch (SqlException e)
         {
@@ -75,7 +78,7 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            return ServiceResult<FamilyModel?>.SuccessResult(_context.FamilyModels.Find(id));
+            return ServiceResult<FamilyModel?>.SuccessResult(_context.Families.Find(id));
         }
         catch (SqlException e)
         {
@@ -89,7 +92,7 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            var existingFam = _context.FamilyModels.Find(family.Id);
+            var existingFam = _context.Families.Find(family.Id);
             if (existingFam == null)
             {
                 return ServiceResult<FamilyModel>.ErrorResult("Family does not exist");
