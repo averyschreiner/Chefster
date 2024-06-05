@@ -7,6 +7,7 @@ namespace Chefster.Models;
 [PrimaryKey(nameof(FamilyId))]
 public class WeeklyNotesModel
 {
+    public required string NoteId { get; set; }
     public required string FamilyId { get; set; }
     public required string Note { get; set; }
 }
