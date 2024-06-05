@@ -1,0 +1,3 @@
+# Chefster
+
+Recipe generation automation
