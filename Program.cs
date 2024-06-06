@@ -1,3 +1,4 @@
+using System.Reflection;
 using Auth0.AspNetCore.Authentication;
 using Chefster;
 using Chefster.Context;
@@ -44,6 +45,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chefster Backend", Version = "v1" });
+    c.IncludeXmlComments(Path.Combine(
+        AppContext.BaseDirectory,
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"), true);
 });
 
 var app = builder.Build();

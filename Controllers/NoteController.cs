@@ -24,8 +24,10 @@ public class NoteController(NoteService noteService) : ControllerBase
         return Ok(note.Data);
     }
 
+    /// <summary>
+    /// Gets Family Notes from the last 7 days
+    /// </summary>
     [HttpGet("/api/notes/{FamilyId}")]
-    // gets the last 7 days worth of notes
     public ActionResult<WeeklyNotesModel> GetPreviousWeekNotes(string FamilyId)
     {
         var note = _noteService.GetWeeklyNotes(FamilyId);
