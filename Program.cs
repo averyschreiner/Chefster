@@ -26,7 +26,6 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
         options.Domain = domain;
         options.ClientId = clientId;
     }
-    //options.CallbackPath = "/account/callback";
 });
 
 var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");

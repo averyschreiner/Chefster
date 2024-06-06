@@ -7,7 +7,7 @@ namespace Chefster.Models;
 [PrimaryKey(nameof(FamilyId))]
 public class MemberModel
 {
-    public required string name;
+    public required string Name;
 
     //This is the Family that the member is a child of
     public required string FamilyId { get; set; }
