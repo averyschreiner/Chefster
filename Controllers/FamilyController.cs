@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/family")]
 [ApiController]
 public class FamilyController(FamilyService familyService) : ControllerBase

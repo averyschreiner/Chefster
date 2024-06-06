@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/note")]
 [ApiController]
 public class NoteController(NoteService noteService) : ControllerBase

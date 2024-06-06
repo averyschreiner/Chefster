@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/member")]
 [ApiController]
 public class MemberController(MemberService memberService) : ControllerBase
