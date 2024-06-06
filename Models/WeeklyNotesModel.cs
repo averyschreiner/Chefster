@@ -10,6 +10,7 @@ public class WeeklyNotesModel
     public required string NoteId { get; set; }
     public required string FamilyId { get; set; }
     public required string Note { get; set; }
+    public required string CreatedAt { get; set; }
 }
 
 public class WeeklyNotesUpdateDto

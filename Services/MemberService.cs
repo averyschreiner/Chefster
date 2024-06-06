@@ -1,10 +1,10 @@
 using Chefster.Common;
+using Chefster.Constants;
 using Chefster.Context;
 using Chefster.Interfaces;
 using Chefster.Models;
-using Microsoft.Data.SqlClient;
-using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace Chefster.Services;
 
@@ -13,9 +13,20 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
     private readonly ChefsterDbContext _context = context;
     private readonly FamilyService _familyService = familyService;
 
-    public ServiceResult<MemberModel> CreateMember(string familyId, [FromBody] MemberCreateDto member)
+    public ServiceResult<MemberModel> CreateMember(
+        string familyId,
+        [FromBody] MemberCreateDto member
+    )
     {
-        // look through members to make sure the id doesnt already exist. What should the ID be??
+        // is this too resource intensive? Since queried values are saved in context it shouldn't be too bad
+        var members = _context.Members.Where(m => m.FamilyId == familyId).ToList();
+        if (members.Count == ChefsterConstants.MAX_MEMBERS)
+        {
+            return ServiceResult<MemberModel>.ErrorResult(
+                $"Member limit reached of {ChefsterConstants.MAX_MEMBERS}."
+            );
+        }
+
         var mem = new MemberModel
         {
             MemberId = Guid.NewGuid().ToString("N"), // make a random unique id for now

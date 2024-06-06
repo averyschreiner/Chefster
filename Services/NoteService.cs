@@ -3,7 +3,6 @@ using Chefster.Context;
 using Chefster.Interfaces;
 using Chefster.Models;
 using Microsoft.Data.SqlClient;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Chefster.Services;
 
@@ -18,6 +17,7 @@ public class NoteService(ChefsterDbContext context) : INote
             NoteId = Guid.NewGuid().ToString("N"),
             FamilyId = familyId,
             Note = note.Note,
+            CreatedAt = DateTime.UtcNow.ToString()
         };
 
         try
@@ -68,6 +68,20 @@ public class NoteService(ChefsterDbContext context) : INote
                 $"Failed to get all notes for family with Id {familyId}. Error: {e}"
             );
         }
+    }
+
+    public ServiceResult<List<WeeklyNotesModel>> GetWeeklyNotes(string familyId)
+    {
+        var now = DateTime.UtcNow;
+
+        // find notes that were made in the last 7 days
+        var notes = _context
+            .WeeklyNotes.Where(n => n.FamilyId == familyId)
+            .AsEnumerable() // Load data into memory to use LINQ to Objects
+            .Where(n => (now - DateTime.Parse(n.CreatedAt)).TotalDays <= 7)
+            .ToList();
+
+        return ServiceResult<List<WeeklyNotesModel>>.SuccessResult(notes);
     }
 
     public ServiceResult<WeeklyNotesModel> UpdateNote(string noteId, WeeklyNotesUpdateDto note)

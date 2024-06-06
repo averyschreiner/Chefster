@@ -2,7 +2,6 @@ using Chefster.Models;
 using Chefster.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Chefster.Controllers;
 
@@ -20,6 +19,19 @@ public class NoteController(NoteService noteService) : ControllerBase
         if (note == null)
         {
             return BadRequest($"not notes for family with Id {FamilyId}");
+        }
+
+        return Ok(note.Data);
+    }
+
+    [HttpGet("/api/notes/{FamilyId}")]
+    // gets the last 7 days worth of notes
+    public ActionResult<WeeklyNotesModel> GetPreviousWeekNotes(string FamilyId)
+    {
+        var note = _noteService.GetWeeklyNotes(FamilyId);
+        if (note == null)
+        {
+            return BadRequest($"not notes for family with Id {FamilyId} for the last 7 days");
         }
 
         return Ok(note.Data);

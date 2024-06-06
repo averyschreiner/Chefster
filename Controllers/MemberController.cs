@@ -13,6 +13,7 @@ public class MemberController(MemberService memberService) : ControllerBase
 {
     private readonly MemberService _memberService = memberService;
 
+    // slightly different route since we can use two different Ids to query members
     [HttpGet("/api/members/{FamilyId}")]
     public ActionResult<MemberModel> GetByFamilyId(string FamilyId)
     {
