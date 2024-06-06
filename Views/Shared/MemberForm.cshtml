@@ -1,14 +1,16 @@
 @model int
 
 <form>
-    <div class="fs-5">
+    <div class="mt-4 fs-5">
         Member @Model
     </div>
-    <div class="mb-3">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" class="form-control" id="name">
+    <div class="row my-3">
+        <label for="name" class="col-1 col-form-label">Name</label>
+        <div class="col-11">
+            <input type="text" class="form-control" id="name">
+        </div>
     </div>
-    <div class="row">
+    <div class="row my-3">
         <div class="col-md-4">
             <label class="form-label">Dietary Restrictions</label>
             <div class="form-check">
