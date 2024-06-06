@@ -2,6 +2,7 @@ using Chefster.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace Chefster.Controllers;
 
@@ -23,7 +24,9 @@ public class IndexController : Controller
         return View();
     }
 
-    [Authorize]
+    // [Authorize]
+    [HttpGet]
+    [Route("/createprofile")]
     public IActionResult CreateProfile()
     {
         return View();

@@ -38,18 +38,27 @@ public class FamilyController(FamilyService familyService) : ControllerBase
         return Ok(families.Data);
     }
 
-    [HttpPost]
-    public ActionResult CreateFamily([FromBody] FamilyModel family)
-    {
-        var created = _familyService.CreateFamily(family);
+    // [HttpPost]
+    // public ActionResult CreateFamily([FromBody] FamilyModel family)
+    // {
+    //     var created = _familyService.CreateFamily(family);
 
-        if (!created.Success)
-        {
-            return BadRequest($"Error: {created.Error}");
-        }
+    //     if (!created.Success)
+    //     {
+    //         return BadRequest($"Error: {created.Error}");
+    //     }
+
+    //     return Ok("Created Family Successfully");
+    // }
+
+    [HttpPost]
+    public ActionResult CreateFamily([FromBody] FamilyModel2 family)
+    {
+        Console.WriteLine(family);
 
         return Ok("Created Family Successfully");
     }
+
 
     [HttpDelete("{Id}")]
     public ActionResult DeleteFamily(string Id)
