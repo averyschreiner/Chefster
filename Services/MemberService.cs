@@ -31,10 +31,7 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
         {
             MemberId = Guid.NewGuid().ToString("N"), // make a random unique id for now
             FamilyId = familyId,
-            Name = member.Name,
-            DietaryRestrictions = member.DietaryRestrictions,
-            DietGoals = member.DietGoals,
-            Preferences = member.Preferences
+            Name = member.Name
         };
 
         try
@@ -113,9 +110,6 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
             }
 
             existingMem.Name = member.Name;
-            existingMem.DietaryRestrictions = member.DietaryRestrictions;
-            existingMem.DietGoals = member.DietGoals;
-            existingMem.Preferences = member.Preferences;
 
             _context.SaveChanges();
             return ServiceResult<MemberModel>.SuccessResult(existingMem);
