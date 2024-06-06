@@ -13,13 +13,19 @@ public class FamilyController(FamilyService familyService) : ControllerBase
     private readonly FamilyService _familyService = familyService;
 
     [HttpGet("{Id}")]
-    public ActionResult<FamilyModel> GetFamily(string id)
+    public ActionResult<FamilyModel> GetFamily(string Id)
     {
-        var family = _familyService.GetById(id);
+        var family = _familyService.GetById(Id);
+
+        if (family.Data != null)
+        {
+            family.Data.Members = _familyService.GetMembers(Id).Data!;
+            family.Data.WeeklyNotes = _familyService.GetNotes(Id).Data!;
+        }
 
         if (family == null)
         {
-            return NotFound(new { Message = $"No family found with familyId {id}" });
+            return NotFound(new { Message = $"No family found with familyId {Id}" });
         }
 
         return Ok(family.Data);
@@ -55,9 +61,9 @@ public class FamilyController(FamilyService familyService) : ControllerBase
 
 
     [HttpDelete("{Id}")]
-    public ActionResult DeleteFamily(string id)
+    public ActionResult DeleteFamily(string Id)
     {
-        var deleted = _familyService.DeleteFamily(id);
+        var deleted = _familyService.DeleteFamily(Id);
 
         if (!deleted.Success)
         {
@@ -67,10 +73,10 @@ public class FamilyController(FamilyService familyService) : ControllerBase
         return Ok();
     }
 
-    [HttpPut]
-    public ActionResult<FamilyModel> UpdateFamily([FromBody] FamilyModel family)
+    [HttpPut("{Id}")]
+    public ActionResult<FamilyModel> UpdateFamily(string Id, [FromBody] FamilyUpdateDto family)
     {
-        var updated = _familyService.UpdateFamily(family);
+        var updated = _familyService.UpdateFamily(Id, family);
 
         if (!updated.Success)
         {

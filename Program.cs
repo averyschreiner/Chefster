@@ -1,3 +1,4 @@
+using System.Reflection;
 using Auth0.AspNetCore.Authentication;
 using Chefster;
 using Chefster.Context;
@@ -30,12 +31,14 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 });
 
 var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");
-builder.Services.AddDbContext<FamilyDbContext>(options =>
+builder.Services.AddDbContext<ChefsterDbContext>(options =>
 {
     options.UseSqlServer(connString);
 });
 
 builder.Services.AddScoped<FamilyService>();
+builder.Services.AddScoped<MemberService>();
+builder.Services.AddScoped<NoteService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
@@ -43,6 +46,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chefster Backend", Version = "v1" });
+    c.IncludeXmlComments(Path.Combine(
+        AppContext.BaseDirectory,
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"), true);
 });
 
 var app = builder.Build();
