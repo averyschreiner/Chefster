@@ -29,6 +29,11 @@ public class IndexController : Controller
     [Route("/createprofile")]
     public IActionResult CreateProfile()
     {
+        foreach (Claim claim in User.Claims)
+        {
+            Console.WriteLine(claim.Type + ": " + claim.Value);
+        }
+        Console.WriteLine();
         return View();
     }
 
