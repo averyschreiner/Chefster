@@ -22,7 +22,7 @@
                     <div class="col">
                         <div class="form-group">
                             <label for="FamilySize">Number of Family Members</label>
-                            <input type="number" class="form-control" value="1" id="FamilySize" name="FamilySize" required>
+                            <input type="number" class="form-control" min="1" max="10" value="1" id="FamilySize" name="FamilySize" required>
                         </div>
                     </div>
                 </div>
@@ -64,73 +64,13 @@
                 familyMembersContainer.innerHTML = '';
 
                 for (let i = 0; i < familySize; i++) {
-                    // will likely change all of this to just html text
-
-                    
-                    const formGroup = document.createElement('div');
-                    formGroup.className = 'form-group mt-3';
-
-                    // Name field
-                    const nameLabel = document.createElement('label');
-                    nameLabel.setAttribute('for', `FamilyMemberName${i}`);
-                    nameLabel.innerText = `Member ${i + 1} Name`;
-
-                    const nameInput = document.createElement('input');
-                    nameInput.type = 'text';
-                    nameInput.className = 'form-control';
-                    nameInput.id = `FamilyMemberName${i}`;
-                    nameInput.name = `FamilyMemberNames[${i}]`;
-                    nameInput.required = true;
-
-                    formGroup.appendChild(nameLabel);
-                    formGroup.appendChild(nameInput);
-
-                    // Age field
-                    const ageLabel = document.createElement('label');
-                    ageLabel.setAttribute('for', `FamilyMemberAge${i}`);
-                    ageLabel.innerText = `Member ${i + 1} Age`;
-
-                    const ageInput = document.createElement('input');
-                    ageInput.type = 'number';
-                    ageInput.className = 'form-control';
-                    ageInput.id = `FamilyMemberAge${i}`;
-                    ageInput.name = `FamilyMemberAges[${i}]`;
-                    ageInput.required = true;
-
-                    formGroup.appendChild(ageLabel);
-                    formGroup.appendChild(ageInput);
-
-                    // Gender field
-                    const genderLabel = document.createElement('label');
-                    genderLabel.setAttribute('for', `FamilyMemberGender${i}`);
-                    genderLabel.innerText = `Member ${i + 1} Gender`;
-
-                    const genderInput = document.createElement('input');
-                    genderInput.type = 'text';
-                    genderInput.className = 'form-control';
-                    genderInput.id = `FamilyMemberGender${i}`;
-                    genderInput.name = `FamilyMemberGenders[${i}]`;
-                    genderInput.required = true;
-
-                    formGroup.appendChild(genderLabel);
-                    formGroup.appendChild(genderInput);
-
-                    // Favorite Food field
-                    const foodLabel = document.createElement('label');
-                    foodLabel.setAttribute('for', `FamilyMemberFood${i}`);
-                    foodLabel.innerText = `Member ${i + 1} Favorite Food`;
-
-                    const foodInput = document.createElement('input');
-                    foodInput.type = 'text';
-                    foodInput.className = 'form-control';
-                    foodInput.id = `FamilyMemberFood${i}`;
-                    foodInput.name = `FamilyMemberFoods[${i}]`;
-                    foodInput.required = true;
-
-                    formGroup.appendChild(foodLabel);
-                    formGroup.appendChild(foodInput);
-
-                    familyMembersContainer.appendChild(formGroup);
+                    // Load the partial view for each family member
+                    fetch(`/MemberForm?index=${i+1}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            // Append the HTML of the partial view to the container
+                            familyMembersContainer.innerHTML += html;
+                        });
                 }
             });
 

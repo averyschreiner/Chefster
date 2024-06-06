@@ -33,7 +33,7 @@ public class IndexController : Controller
         {
             Console.WriteLine(claim.Type + ": " + claim.Value);
         }
-        Console.WriteLine();
+        Console.WriteLine(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
         return View();
     }
 
@@ -59,5 +59,12 @@ public class IndexController : Controller
     public IActionResult Profile()
     {
         return View();
+    }
+
+    [HttpGet]
+    [Route("/memberform")]
+    public IActionResult MemberForm(int index)
+    {
+        return PartialView("MemberForm", index);
     }
 }
