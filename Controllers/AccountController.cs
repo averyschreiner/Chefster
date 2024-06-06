@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+namespace Chefster.Controllers;
+
 public class AccountController : Controller
 {
     public async Task LogIn()
     {
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-            .WithRedirectUri(Url.Action("Chat", "Index"))
+            .WithRedirectUri(Url.Action("Chat", "Index")!)
             .Build();
 
         await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
@@ -19,7 +21,7 @@ public class AccountController : Controller
     public async Task LogOut()
     {
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
-            .WithRedirectUri(Url.Action("Index", "Index"))
+            .WithRedirectUri(Url.Action("Index", "Index")!)
             .Build();
 
         await HttpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
@@ -30,7 +32,7 @@ public class AccountController : Controller
     {
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithParameter("screen_hint", "signup")
-            .WithRedirectUri(Url.Action("CreateProfile", "Index"))
+            .WithRedirectUri(Url.Action("CreateProfile", "Index")!)
             .Build();
 
         await HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
