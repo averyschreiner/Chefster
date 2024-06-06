@@ -6,19 +6,15 @@ using Microsoft.Data.SqlClient;
 
 namespace Chefster.Services;
 
-public class FamilyService(FamilyDbContext context) : IFamily
+public class FamilyService(ChefsterDbContext context) : IFamily
 {
-    private readonly FamilyDbContext _context = context;
+    private readonly ChefsterDbContext _context = context;
 
     public ServiceResult<FamilyModel> CreateFamily(FamilyModel family)
     {
         var fam = _context.Families.Find(family.Id);
-
-        Console.WriteLine($"FROM CREATE: {family.Id}");
-
         if (fam != null)
         {
-            Console.WriteLine($"{fam.CreatedAt}");
             return ServiceResult<FamilyModel>.ErrorResult("Family Already Exists");
         }
 
@@ -42,7 +38,6 @@ public class FamilyService(FamilyDbContext context) : IFamily
     {
         try
         {
-            Console.WriteLine($"FROM DELETE: {id}");
             var fam = _context.Families.Find(id);
             if (fam == null)
             {
@@ -55,7 +50,7 @@ public class FamilyService(FamilyDbContext context) : IFamily
         catch (Exception e)
         {
             return ServiceResult<FamilyModel>.ErrorResult(
-                $"Failed to remote family from database. Error: {e}"
+                $"Failed to remove family from database. Error: {e}"
             );
         }
     }
@@ -88,22 +83,50 @@ public class FamilyService(FamilyDbContext context) : IFamily
         }
     }
 
-    public ServiceResult<FamilyModel> UpdateFamily(FamilyModel family)
+    public ServiceResult<List<MemberModel>> GetMembers(string id)
     {
         try
         {
-            var existingFam = _context.Families.Find(family.Id);
+            var mem = _context.Members.Where(m => m.FamilyId == id).ToList();
+            return ServiceResult<List<MemberModel>>.SuccessResult(mem);
+        }
+        catch (SqlException e)
+        {
+            return ServiceResult<List<MemberModel>>.ErrorResult(
+                $"Failed to retrieve all members for family with id {id}. Error: {e}"
+            );
+        }
+    }
+
+    public ServiceResult<List<WeeklyNotesModel>> GetNotes(string id)
+    {
+        try
+        {
+            var notes = _context.WeeklyNotes.Where(m => m.FamilyId == id).ToList();
+            return ServiceResult<List<WeeklyNotesModel>>.SuccessResult(notes);
+        }
+        catch (SqlException e)
+        {
+            return ServiceResult<List<WeeklyNotesModel>>.ErrorResult(
+                $"Failed to retrieve all notes for family with id {id}. Error: {e}"
+            );
+        }
+    }
+
+    public ServiceResult<FamilyModel> UpdateFamily(string id, FamilyUpdateDto family)
+    {
+        try
+        {
+            // find the family
+            var existingFam = _context.Families.Find(id);
             if (existingFam == null)
             {
                 return ServiceResult<FamilyModel>.ErrorResult("Family does not exist");
             }
 
             // update everything even if it wasnt changed. Not the most efficient, but works.
-            existingFam.Email = family.Email;
             existingFam.PhoneNumber = family.PhoneNumber;
             existingFam.FamilySize = family.FamilySize;
-            existingFam.Members = family.Members;
-            existingFam.WeeklyNotes = family.WeeklyNotes;
 
             // we've edited the item in context, now just save it
             _context.SaveChanges();

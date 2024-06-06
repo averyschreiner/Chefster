@@ -17,6 +17,12 @@ public class FamilyController(FamilyService familyService) : ControllerBase
     {
         var family = _familyService.GetById(Id);
 
+        if (family.Data != null)
+        {
+            family.Data.Members = _familyService.GetMembers(Id).Data!;
+            family.Data.WeeklyNotes = _familyService.GetNotes(Id).Data!;
+        }
+
         if (family == null)
         {
             return NotFound(new { Message = $"No family found with familyId {Id}" });
@@ -58,10 +64,10 @@ public class FamilyController(FamilyService familyService) : ControllerBase
         return Ok();
     }
 
-    [HttpPut]
-    public ActionResult<FamilyModel> UpdateFamily([FromBody] FamilyModel family)
+    [HttpPut("{Id}")]
+    public ActionResult<FamilyModel> UpdateFamily(string Id, [FromBody] FamilyUpdateDto family)
     {
-        var updated = _familyService.UpdateFamily(family);
+        var updated = _familyService.UpdateFamily(Id, family);
 
         if (!updated.Success)
         {

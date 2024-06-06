@@ -30,12 +30,14 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 });
 
 var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");
-builder.Services.AddDbContext<FamilyDbContext>(options =>
+builder.Services.AddDbContext<ChefsterDbContext>(options =>
 {
     options.UseSqlServer(connString);
 });
 
 builder.Services.AddScoped<FamilyService>();
+builder.Services.AddScoped<MemberService>();
+builder.Services.AddScoped<NoteService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
