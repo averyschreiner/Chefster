@@ -98,21 +98,6 @@ public class FamilyService(ChefsterDbContext context) : IFamily
         }
     }
 
-    public ServiceResult<List<WeeklyNotesModel>> GetNotes(string id)
-    {
-        try
-        {
-            var notes = _context.WeeklyNotes.Where(m => m.FamilyId == id).ToList();
-            return ServiceResult<List<WeeklyNotesModel>>.SuccessResult(notes);
-        }
-        catch (SqlException e)
-        {
-            return ServiceResult<List<WeeklyNotesModel>>.ErrorResult(
-                $"Failed to retrieve all notes for family with id {id}. Error: {e}"
-            );
-        }
-    }
-
     public ServiceResult<FamilyModel> UpdateFamily(string id, FamilyUpdateDto family)
     {
         try
@@ -127,6 +112,8 @@ public class FamilyService(ChefsterDbContext context) : IFamily
             // update everything even if it wasnt changed. Not the most efficient, but works.
             existingFam.PhoneNumber = family.PhoneNumber;
             existingFam.FamilySize = family.FamilySize;
+            existingFam.GenerationDay = family.GenerationDay;
+            existingFam.GenerationTime = family.GenerationTime;
 
             // we've edited the item in context, now just save it
             _context.SaveChanges();

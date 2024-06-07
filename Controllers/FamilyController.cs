@@ -8,9 +8,13 @@ namespace Chefster.Controllers;
 //[Authorize]
 [Route("api/family")]
 [ApiController]
-public class FamilyController(FamilyService familyService) : ControllerBase
+public class FamilyController(
+    FamilyService familyService,
+    ConsiderationsService considerationsService
+) : ControllerBase
 {
     private readonly FamilyService _familyService = familyService;
+    private readonly ConsiderationsService _considerationService = considerationsService;
 
     [HttpGet("{Id}")]
     public ActionResult<FamilyModel> GetFamily(string Id)
@@ -20,7 +24,7 @@ public class FamilyController(FamilyService familyService) : ControllerBase
         if (family.Data != null)
         {
             family.Data.Members = _familyService.GetMembers(Id).Data!;
-            family.Data.WeeklyNotes = _familyService.GetNotes(Id).Data!;
+            family.Data.Considerations = _considerationService.GetAllFamilyConsiderations(Id).Data!;
         }
 
         if (family == null)
@@ -38,27 +42,18 @@ public class FamilyController(FamilyService familyService) : ControllerBase
         return Ok(families.Data);
     }
 
-    // [HttpPost]
-    // public ActionResult CreateFamily([FromBody] FamilyModel family)
-    // {
-    //     var created = _familyService.CreateFamily(family);
-
-    //     if (!created.Success)
-    //     {
-    //         return BadRequest($"Error: {created.Error}");
-    //     }
-
-    //     return Ok("Created Family Successfully");
-    // }
-
     [HttpPost]
-    public ActionResult CreateFamily([FromBody] FamilyModel2 family)
+    public ActionResult CreateFamily([FromBody] FamilyModel family)
     {
-        Console.WriteLine(family);
+        var created = _familyService.CreateFamily(family);
+
+        if (!created.Success)
+        {
+            return BadRequest($"Error: {created.Error}");
+        }
 
         return Ok("Created Family Successfully");
     }
-
 
     [HttpDelete("{Id}")]
     public ActionResult DeleteFamily(string Id)

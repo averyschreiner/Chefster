@@ -8,13 +8,13 @@ public class ChefsterDbContext(DbContextOptions<ChefsterDbContext> options) : Db
     // Define all of the tables we have
     public DbSet<FamilyModel> Families { get; set; }
     public DbSet<MemberModel> Members { get; set; }
-    public DbSet<WeeklyNotesModel> WeeklyNotes { get; set; }
+    public DbSet<ConsiderationsModel> Considerations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder options)
     {
         // define what model goes to what table
         options.Entity<FamilyModel>().ToTable("Families");
         options.Entity<MemberModel>().ToTable("Members");
-        options.Entity<WeeklyNotesModel>().ToTable("WeeklyNotes");
+        options.Entity<ConsiderationsModel>().ToTable("Considerations");
     }
 }

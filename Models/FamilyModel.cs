@@ -10,18 +10,20 @@ namespace Chefster.Models;
 public class FamilyModel
 {
     public required string Id { get; set; }
-    public string? Email { get; set; }
-    public string? PhoneNumber { get; set; }
+    public required string Email { get; set; }
+    public required string PhoneNumber { get; set; }
     public required string CreatedAt { get; set; }
     public required int FamilySize { get; set; }
+    public required string GenerationDay { get; set; }
+    public required string GenerationTime { get; set; }
 
     [NotMapped] // these are part of the model but not part of the table in the db
     [SwaggerIgnore]
-    public required List<MemberModel?> Members { get; set; }
+    public List<MemberModel?>? Members { get; set; }
 
     [NotMapped]
     [SwaggerIgnore]
-    public required List<WeeklyNotesModel?> WeeklyNotes { get; set; }
+    public List<ConsiderationsModel?>? Considerations { get; set; }
 }
 
 /*
@@ -31,6 +33,8 @@ that we are ok with editing
 */
 public class FamilyUpdateDto
 {
-    public string? PhoneNumber { get; set; }
+    public required string PhoneNumber { get; set; }
     public required int FamilySize { get; set; }
+    public required string GenerationDay { get; set; }
+    public required string GenerationTime { get; set; }
 }

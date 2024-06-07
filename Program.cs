@@ -38,7 +38,7 @@ builder.Services.AddDbContext<ChefsterDbContext>(options =>
 
 builder.Services.AddScoped<FamilyService>();
 builder.Services.AddScoped<MemberService>();
-builder.Services.AddScoped<NoteService>();
+builder.Services.AddScoped<ConsiderationsService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
