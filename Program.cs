@@ -3,6 +3,8 @@ using Auth0.AspNetCore.Authentication;
 using Chefster;
 using Chefster.Context;
 using Chefster.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -36,6 +38,8 @@ builder.Services.AddDbContext<ChefsterDbContext>(options =>
     options.UseSqlServer(connString);
 });
 
+//GlobalConfiguration.Configuration.UseSqlServerStorage("connection String");
+
 builder.Services.AddScoped<FamilyService>();
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<ConsiderationsService>();
@@ -43,12 +47,28 @@ builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
 
+// Add Hangfire services.
+builder.Services.AddHangfire(configuration =>
+    configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(connString)
+);
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chefster Backend", Version = "v1" });
-    c.IncludeXmlComments(Path.Combine(
-        AppContext.BaseDirectory,
-        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"), true);
+    c.IncludeXmlComments(
+        Path.Combine(
+            AppContext.BaseDirectory,
+            $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"
+        ),
+        true
+    );
 });
 
 var app = builder.Build();
@@ -75,6 +95,9 @@ if (isProd == "false")
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Chefster Backend");
     });
 }
+
+app.UseHangfireDashboard();
+app.MapHangfireDashboard();
 
 app.UseHttpsRedirection();
 

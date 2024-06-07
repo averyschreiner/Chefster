@@ -13,6 +13,9 @@
       <Content Include=".env" Condition="Exists('.env')">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <PackageReference Include="Hangfire.Core" Version="1.8.*" />
+      <PackageReference Include="Hangfire.SqlServer" Version="1.8.*" />
+      <PackageReference Include="Hangfire.AspNetCore" Version="1.8.12" />
       <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
