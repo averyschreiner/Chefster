@@ -1,7 +1,7 @@
 @model int
 
-<form>
-    <div class="mt-4 fs-5">
+<div class="p-3 mt-4 rounded border border-primary border-2 opacity-100">
+    <div class="py-1 fs-5">
         Member @Model
     </div>
     <div class="row my-3">
@@ -53,12 +53,6 @@
         <div class="col-md-4">
             <label class="form-label">Diet Goals</label>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="muscle-gain" id="goalMuscleGain">
-                <label class="form-check-label" for="goalMuscleGain">
-                    Improve Overall Health
-                </label>
-            </div>
-            <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="weight-loss" id="goalWeightLoss">
                 <label class="form-check-label" for="goalWeightLoss">
                     Increase Energy
@@ -80,6 +74,12 @@
                 <input class="form-check-input" type="checkbox" value="increase-energy" id="goalIncreaseEnergy">
                 <label class="form-check-label" for="goalIncreaseEnergy">
                     Muscle Gain
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="muscle-gain" id="goalMuscleGain">
+                <label class="form-check-label" for="goalMuscleGain">
+                    Overall Health
                 </label>
             </div>
             <div class="form-check">
@@ -124,9 +124,9 @@
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="paleo" id="prefPaleo">
                 <label class="form-check-label" for="prefPaleo">
-                    Sweets & Desserts
+                    Seafood
                 </label>
             </div>
         </div>
     </div>
-</form>
+</div>

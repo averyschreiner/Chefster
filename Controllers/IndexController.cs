@@ -29,11 +29,11 @@ public class IndexController : Controller
     [Route("/createprofile")]
     public IActionResult CreateProfile()
     {
-        foreach (Claim claim in User.Claims)
-        {
-            Console.WriteLine(claim.Type + ": " + claim.Value);
-        }
-        Console.WriteLine(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+        // foreach (Claim claim in User.Claims)
+        // {
+        //     Console.WriteLine(claim.Type + ": " + claim.Value);
+        // }
+        // Console.WriteLine(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
         return View();
     }
 
