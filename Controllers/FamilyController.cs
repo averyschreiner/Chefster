@@ -20,24 +20,18 @@ public class FamilyController(
     private readonly FamilyService _familyService = familyService;
     private readonly MemberService _memberService = memberService;
 
-    // [HttpGet("{Id}")]
-    // public ActionResult<FamilyModel> GetFamily(string Id)
-    // {
-    //     var family = _familyService.GetById(Id);
+    [HttpGet("{Id}")]
+    public ActionResult<FamilyModel> GetFamily(string Id)
+    {
+        var family = _familyService.GetById(Id);
 
-    //     if (family.Data != null)
-    //     {
-    //         family.Data.Members = _familyService.GetMembers(Id).Data!;
-    //         family.Data.Considerations = _considerationService.GetAllFamilyConsiderations(Id).Data!;
-    //     }
+        if (family == null)
+        {
+            return NotFound(new { Message = $"No family found with familyId {Id}" });
+        }
 
-    //     if (family == null)
-    //     {
-    //         return NotFound(new { Message = $"No family found with familyId {Id}" });
-    //     }
-
-    //     return Ok(family.Data);
-    // }
+        return Ok(family.Data);
+    }
 
     [HttpGet]
     public ActionResult<FamilyModel> GetAllFamilies()
@@ -86,43 +80,50 @@ public class FamilyController(
         }
 
         // create the new family
-        FamilyModel NewFamily = new FamilyModel
-        {
-            Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
-            Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
-            CreatedAt = DateTime.UtcNow,
-            PhoneNumber = Family.PhoneNumber,
-            FamilySize = Family.FamilySize,
-            GenerationDay = Family.GenerationDay,
-            GenerationTime = Family.GenerationTime
-        };
+        FamilyModel NewFamily =
+            new()
+            {
+                // these shouldn't  be null so we added a "!"
+                Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!,
+                Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
+                CreatedAt = DateTime.UtcNow,
+                PhoneNumber = Family.PhoneNumber,
+                FamilySize = Family.FamilySize,
+                GenerationDay = Family.GenerationDay,
+                GenerationTime = Family.GenerationTime
+            };
 
         _familyService.CreateFamily(NewFamily);
 
         foreach (MemberViewModel Member in Family.Members)
         {
             // create the new member
-            MemberCreateDto NewMember = new MemberCreateDto
-            {
-                FamilyId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
-                Name = Member.Name
-            };
+            MemberCreateDto NewMember =
+                new()
+                {
+                    FamilyId = User
+                        .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                        ?.Value!,
+                    Name = Member.Name
+                };
 
-            MemberModel CreatedMember = _memberService.CreateMember(NewMember).Data;
+            MemberModel CreatedMember = _memberService.CreateMember(NewMember).Data!;
 
             // and their considerations
             foreach (SelectListItem r in Member.Restrictions)
             {
                 if (r.Selected)
                 {
-                    ConsiderationsCreateDto consideration = new ConsiderationsCreateDto
-                    {
-                        MemberId = CreatedMember.MemberId,
-                        Type = Enums.ConsiderationsEnum.Restriction,
-                        Value = r.Text
-                    };
+                    // create a new consideration
+                    ConsiderationsCreateDto restriction =
+                        new()
+                        {
+                            MemberId = CreatedMember.MemberId,
+                            Type = Enums.ConsiderationsEnum.Restriction,
+                            Value = r.Text
+                        };
 
-                    _considerationsService.CreateConsideration(consideration);
+                    _considerationsService.CreateConsideration(restriction);
                 }
             }
 
@@ -130,14 +131,15 @@ public class FamilyController(
             {
                 if (g.Selected)
                 {
-                    ConsiderationsCreateDto consideration = new ConsiderationsCreateDto
-                    {
-                        MemberId = CreatedMember.MemberId,
-                        Type = Enums.ConsiderationsEnum.Goal,
-                        Value = g.Text
-                    };
+                    ConsiderationsCreateDto goal =
+                        new()
+                        {
+                            MemberId = CreatedMember.MemberId,
+                            Type = Enums.ConsiderationsEnum.Goal,
+                            Value = g.Text
+                        };
 
-                    _considerationsService.CreateConsideration(consideration);
+                    _considerationsService.CreateConsideration(goal);
                 }
             }
 
@@ -145,14 +147,15 @@ public class FamilyController(
             {
                 if (c.Selected)
                 {
-                    ConsiderationsCreateDto consideration = new ConsiderationsCreateDto
-                    {
-                        MemberId = CreatedMember.MemberId,
-                        Type = Enums.ConsiderationsEnum.Cuisine,
-                        Value = c.Text
-                    };
+                    ConsiderationsCreateDto cuisine =
+                        new()
+                        {
+                            MemberId = CreatedMember.MemberId,
+                            Type = Enums.ConsiderationsEnum.Cuisine,
+                            Value = c.Text
+                        };
 
-                    _considerationsService.CreateConsideration(consideration);
+                    _considerationsService.CreateConsideration(cuisine);
                 }
             }
         }

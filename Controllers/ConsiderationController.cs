@@ -33,14 +33,16 @@ public class ConsiderationController(ConsiderationsService considerationsService
         var note = _considerationsService.GetWeeklyConsiderations(FamilyId);
         if (note == null)
         {
-            return BadRequest($"not considerations for family with Id {FamilyId} for the last 7 days");
+            return BadRequest(
+                $"not considerations for family with Id {FamilyId} for the last 7 days"
+            );
         }
 
         return Ok(note.Data);
     }
 
-    [HttpPost("{MemberId}")]
-    public ActionResult CreateConsiderations(ConsiderationsCreateDto consideration)
+    [HttpPost]
+    public ActionResult CreateConsiderations([FromBody] ConsiderationsCreateDto consideration)
     {
         var created = _considerationsService.CreateConsideration(consideration);
         if (!created.Success)

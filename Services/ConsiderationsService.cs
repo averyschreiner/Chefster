@@ -10,7 +10,9 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
 {
     private readonly ChefsterDbContext _context = context;
 
-    public ServiceResult<ConsiderationsModel> CreateConsideration(ConsiderationsCreateDto consideration)
+    public ServiceResult<ConsiderationsModel> CreateConsideration(
+        ConsiderationsCreateDto consideration
+    )
     {
         var n = new ConsiderationsModel
         {
@@ -96,14 +98,18 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
         return ServiceResult<List<ConsiderationsModel>>.SuccessResult(considerations);
     }
 
-    public ServiceResult<ConsiderationsModel> UpdateConsideration(ConsiderationsUpdateDto consideration)
+    public ServiceResult<ConsiderationsModel> UpdateConsideration(
+        ConsiderationsUpdateDto consideration
+    )
     {
         try
         {
             var existingConsideration = _context.Considerations.Find(consideration.Id);
             if (existingConsideration == null)
             {
-                return ServiceResult<ConsiderationsModel>.ErrorResult("consideration does not exist");
+                return ServiceResult<ConsiderationsModel>.ErrorResult(
+                    "consideration does not exist"
+                );
             }
 
             existingConsideration.Type = consideration.Type;
