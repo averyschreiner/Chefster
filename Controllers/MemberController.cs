@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/member")]
 [ApiController]
 public class MemberController(MemberService memberService) : ControllerBase
@@ -43,7 +43,7 @@ public class MemberController(MemberService memberService) : ControllerBase
         return Ok(members.Data);
     }
 
-    [HttpPost("{FamilyId}")]
+    [HttpPost]
     public ActionResult CreateMember(MemberCreateDto member)
     {
         var created = _memberService.CreateMember(member);

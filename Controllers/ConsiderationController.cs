@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/consideration")]
 [ApiController]
 public class ConsiderationController(ConsiderationsService considerationsService) : ControllerBase

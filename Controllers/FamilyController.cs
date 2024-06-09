@@ -2,12 +2,13 @@ using System.Security.Claims;
 using Chefster.Models;
 using Chefster.Services;
 using Chefster.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Chefster.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/family")]
 [ApiController]
 public class FamilyController(
