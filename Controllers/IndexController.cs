@@ -2,7 +2,8 @@ using Chefster.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
-using System.Security.Claims;
+using Chefster.ViewModels;
+using Chefster.Common;
 
 namespace Chefster.Controllers;
 
@@ -29,12 +30,24 @@ public class IndexController : Controller
     [Route("/createprofile")]
     public IActionResult CreateProfile()
     {
-        // foreach (Claim claim in User.Claims)
-        // {
-        //     Console.WriteLine(claim.Type + ": " + claim.Value);
-        // }
-        // Console.WriteLine(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
-        return View();
+        var model = new FamilyViewModel
+        {
+            PhoneNumber = "",
+            FamilySize = 1,
+            GenerationDay = DayOfWeek.Sunday,
+            GenerationTime = TimeSpan.Zero,
+            Members = new List<MemberViewModel>
+            {
+                new MemberViewModel
+                {
+                    Name = "",
+                    Restrictions = ConsiderationsLists.RestrictionsList,
+                    Goals = ConsiderationsLists.GoalsList,
+                    Cuisines = ConsiderationsLists.CuisinesList
+                }
+            }
+        };
+        return View(model);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -65,6 +78,15 @@ public class IndexController : Controller
     [Route("/memberform")]
     public IActionResult MemberForm(int index)
     {
-        return PartialView("MemberForm", index);
+        var model = new MemberViewModel
+        {
+            Name = "",
+            Index = index,
+            Restrictions = ConsiderationsLists.RestrictionsList,
+            Goals = ConsiderationsLists.GoalsList,
+            Cuisines = ConsiderationsLists.CuisinesList
+        };
+
+        return PartialView("MemberForm", model);
     }
 }

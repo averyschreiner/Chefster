@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace Chefster.Models;
@@ -20,5 +21,6 @@ public class MemberUpdateDto
 
 public class MemberCreateDto
 {
+    public required string FamilyId { get; set; }
     public required string Name { get; set; }
 }

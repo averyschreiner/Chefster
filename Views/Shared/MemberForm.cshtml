@@ -1,132 +1,51 @@
-@model int
+@model Chefster.ViewModels.MemberViewModel
 
 <div class="p-3 mt-4 rounded border border-primary border-2 opacity-100">
     <div class="py-1 fs-5">
-        Member @Model
+        Member @(Model.Index + 1)
     </div>
     <div class="row my-3">
-        <label for="name" class="col-1 col-form-label">Name</label>
+        <label name="Members[@(Model.Index)].Name" class="col-1 col-form-label">Name</label>
         <div class="col-11">
-            <input type="text" class="form-control" id="name">
+            <input name="Members[@(Model.Index)].Name" type="text" class="form-control" required>
         </div>
     </div>
     <div class="row my-3">
         <div class="col-md-4">
             <label class="form-label">Dietary Restrictions</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="nuts" id="allergyNuts">
-                <label class="form-check-label" for="allergyNuts">
-                    Carnivore
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="nuts" id="allergyNuts">
-                <label class="form-check-label" for="allergyNuts">
-                    Gluten-Free
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="dairy" id="allergyDairy">
-                <label class="form-check-label" for="allergyDairy">
-                    Nut-Free
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="gluten" id="allergyGluten">
-                <label class="form-check-label" for="allergyGluten">
-                    Shellfish-Free
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="soy" id="allergySoy">
-                <label class="form-check-label" for="allergySoy">
-                    Vegan
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="shellfish" id="allergyShellfish">
-                <label class="form-check-label" for="allergyShellfish">
-                    Vegetarian
-                </label>
-            </div>
+            @for (int i = 0; i < Model.Restrictions.Count; i++)
+            {
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="Members[@(Model.Index)].Restrictions[@i].Selected" value="true" />
+                    <label class="form-check-label">@(Model.Restrictions[i].Text)</label>
+                    <input type="hidden" name="Members[@(Model.Index)].Restrictions[@i].Selected" value="false" />
+                    <input type="hidden" name="Members[@(Model.Index)].Restrictions[@i].Text" value="@(Model.Restrictions[i].Text)" />
+                </div>
+            }
         </div>
         <div class="col-md-4">
             <label class="form-label">Diet Goals</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="weight-loss" id="goalWeightLoss">
-                <label class="form-check-label" for="goalWeightLoss">
-                    Increase Energy
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="maintain-weight" id="goalMaintainWeight">
-                <label class="form-check-label" for="goalMaintainWeight">
-                    Maintain Weight
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="improve-health" id="goalImproveHealth">
-                <label class="form-check-label" for="goalImproveHealth">
-                    Mental Clarity
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="increase-energy" id="goalIncreaseEnergy">
-                <label class="form-check-label" for="goalIncreaseEnergy">
-                    Muscle Gain
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="muscle-gain" id="goalMuscleGain">
-                <label class="form-check-label" for="goalMuscleGain">
-                    Overall Health
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="increase-energy" id="goalIncreaseEnergy">
-                <label class="form-check-label" for="goalIncreaseEnergy">
-                    Weight Loss
-                </label>
-            </div>
+            @for (int i = 0; i < Model.Goals.Count; i++)
+            {
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="Members[@(Model.Index)].Goals[@i].Selected" value="true" />
+                    <label class="form-check-label">@(Model.Goals[i].Text)</label>
+                    <input type="hidden" name="Members[@(Model.Index)].Goals[@i].Selected" value="false" />
+                    <input type="hidden" name="Members[@(Model.Index)].Goals[@i].Text" value="@(Model.Goals[i].Text)" />
+                </div>
+            }
         </div>
         <div class="col-md-4">
             <label class="form-label">Cuisines</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="vegetarian" id="prefVegetarian">
-                <label class="form-check-label" for="prefVegetarian">
-                    American
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="vegan" id="prefVegan">
-                <label class="form-check-label" for="prefVegan">
-                    Asian
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="pescatarian" id="prefPescatarian">
-                <label class="form-check-label" for="prefPescatarian">
-                    Barbecue
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="keto" id="prefKeto">
-                <label class="form-check-label" for="prefKeto">
-                    Italian
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="paleo" id="prefPaleo">
-                <label class="form-check-label" for="prefPaleo">
-                    Mexican
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="paleo" id="prefPaleo">
-                <label class="form-check-label" for="prefPaleo">
-                    Seafood
-                </label>
-            </div>
+            @for (int i = 0; i < Model.Cuisines.Count; i++)
+            {
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="Members[@(Model.Index)].Cuisines[@i].Selected" value="true" />
+                    <label class="form-check-label">@(Model.Cuisines[i].Text)</label>
+                    <input type="hidden" name="Members[@(Model.Index)].Cuisines[@i].Selected" value="false" />
+                    <input type="hidden" name="Members[@(Model.Index)].Cuisines[@i].Text" value="@(Model.Cuisines[i].Text)" />
+                </div>
+            }
         </div>
     </div>
 </div>

@@ -6,7 +6,7 @@ namespace Chefster.Interfaces;
 public interface IMember
 {
     ServiceResult<List<MemberModel>> GetByFamilyId(string id);
-    ServiceResult<MemberModel> CreateMember(string familyId, MemberCreateDto member);
+    ServiceResult<MemberModel> CreateMember(MemberCreateDto member);
     ServiceResult<MemberModel> DeleteMember(string memberId);
     ServiceResult<MemberModel> UpdateMember(string memberId, MemberUpdateDto member);
 }

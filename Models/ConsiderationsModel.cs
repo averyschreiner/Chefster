@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Chefster.Enums;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace Chefster.Models;
@@ -16,8 +17,16 @@ public class ConsiderationsModel
     public required string CreatedAt { get; set; }
 }
 
-public class ConsiderationsDto
+public class ConsiderationsCreateDto
 {
+    public required string MemberId { get; set; }
+    public required ConsiderationsEnum Type { get; set; }
+    public required string Value { get; set; }
+}
+
+public class ConsiderationsUpdateDto
+{
+    public required string Id { get; set; }
     public required ConsiderationsEnum Type { get; set; }
     public required string Value { get; set; }
 }

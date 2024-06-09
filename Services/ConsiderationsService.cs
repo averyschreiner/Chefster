@@ -10,17 +10,14 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
 {
     private readonly ChefsterDbContext _context = context;
 
-    public ServiceResult<ConsiderationsModel> CreateConsideration(
-        string memberId,
-        ConsiderationsDto note
-    )
+    public ServiceResult<ConsiderationsModel> CreateConsideration(ConsiderationsCreateDto consideration)
     {
         var n = new ConsiderationsModel
         {
             ConsiderationId = Guid.NewGuid().ToString("N"),
-            MemberId = memberId,
-            Type = note.Type,
-            Value = note.Value,
+            MemberId = consideration.MemberId,
+            Type = consideration.Type,
+            Value = consideration.Value,
             CreatedAt = DateTime.UtcNow.ToString()
         };
 
@@ -99,28 +96,25 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
         return ServiceResult<List<ConsiderationsModel>>.SuccessResult(considerations);
     }
 
-    public ServiceResult<ConsiderationsModel> UpdateConsideration(
-        string considerationId,
-        ConsiderationsDto con
-    )
+    public ServiceResult<ConsiderationsModel> UpdateConsideration(ConsiderationsUpdateDto consideration)
     {
         try
         {
-            var existingConsideration = _context.Considerations.Find(considerationId);
+            var existingConsideration = _context.Considerations.Find(consideration.Id);
             if (existingConsideration == null)
             {
                 return ServiceResult<ConsiderationsModel>.ErrorResult("consideration does not exist");
             }
 
-            existingConsideration.Type = con.Type;
-            existingConsideration.Value = con.Value;
+            existingConsideration.Type = consideration.Type;
+            existingConsideration.Value = consideration.Value;
             _context.SaveChanges();
             return ServiceResult<ConsiderationsModel>.SuccessResult(existingConsideration);
         }
         catch (SqlException e)
         {
             return ServiceResult<ConsiderationsModel>.ErrorResult(
-                $"Failed to update consideration with Id {considerationId}. Error: {e}"
+                $"Failed to update consideration with Id {consideration.Id}. Error: {e}"
             );
         }
     }

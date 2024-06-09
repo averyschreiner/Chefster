@@ -40,9 +40,9 @@ public class ConsiderationController(ConsiderationsService considerationsService
     }
 
     [HttpPost("{MemberId}")]
-    public ActionResult CreateConsiderations(string MemberId, [FromBody] ConsiderationsDto con)
+    public ActionResult CreateConsiderations(ConsiderationsCreateDto consideration)
     {
-        var created = _considerationsService.CreateConsideration(MemberId, con);
+        var created = _considerationsService.CreateConsideration(consideration);
         if (!created.Success)
         {
             return BadRequest($"Error: {created.Error}");
@@ -64,12 +64,9 @@ public class ConsiderationController(ConsiderationsService considerationsService
     }
 
     [HttpPut("{ConsiderationId}")]
-    public ActionResult<ConsiderationsModel> UpdateNote(
-        string ConsiderationId,
-        [FromBody] ConsiderationsDto con
-    )
+    public ActionResult<ConsiderationsModel> UpdateNote(ConsiderationsUpdateDto consideration)
     {
-        var updated = _considerationsService.UpdateConsideration(ConsiderationId, con);
+        var updated = _considerationsService.UpdateConsideration(consideration);
 
         if (!updated.Success)
         {

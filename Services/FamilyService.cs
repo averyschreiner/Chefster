@@ -3,6 +3,7 @@ using Chefster.Context;
 using Chefster.Interfaces;
 using Chefster.Models;
 using Microsoft.Data.SqlClient;
+using System.Security.Claims;
 
 namespace Chefster.Services;
 
@@ -17,8 +18,6 @@ public class FamilyService(ChefsterDbContext context) : IFamily
         {
             return ServiceResult<FamilyModel>.ErrorResult("Family Already Exists");
         }
-
-        family.CreatedAt = DateTime.UtcNow.ToString();
 
         try
         {
