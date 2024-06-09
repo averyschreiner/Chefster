@@ -1,4 +1,4 @@
-using Chefster.Common;
+ using Chefster.Common;
 using Chefster.Constants;
 using Chefster.Context;
 using Chefster.Interfaces;
@@ -13,13 +13,10 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
     private readonly ChefsterDbContext _context = context;
     private readonly FamilyService _familyService = familyService;
 
-    public ServiceResult<MemberModel> CreateMember(
-        string familyId,
-        [FromBody] MemberCreateDto member
-    )
+    public ServiceResult<MemberModel> CreateMember(MemberCreateDto member)
     {
         // is this too resource intensive? Since queried values are saved in context it shouldn't be too bad
-        var members = _context.Members.Where(m => m.FamilyId == familyId).ToList();
+        var members = _context.Members.Where(m => m.FamilyId == member.FamilyId).ToList();
         if (members.Count == ChefsterConstants.MAX_MEMBERS)
         {
             return ServiceResult<MemberModel>.ErrorResult(
@@ -30,11 +27,8 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
         var mem = new MemberModel
         {
             MemberId = Guid.NewGuid().ToString("N"), // make a random unique id for now
-            FamilyId = familyId,
-            Name = member.Name,
-            DietaryRestrictions = member.DietaryRestrictions,
-            DietGoals = member.DietGoals,
-            Preferences = member.Preferences
+            FamilyId = member.FamilyId,
+            Name = member.Name
         };
 
         try
@@ -113,9 +107,6 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
             }
 
             existingMem.Name = member.Name;
-            existingMem.DietaryRestrictions = member.DietaryRestrictions;
-            existingMem.DietGoals = member.DietGoals;
-            existingMem.Preferences = member.Preferences;
 
             _context.SaveChanges();
             return ServiceResult<MemberModel>.SuccessResult(existingMem);

@@ -43,10 +43,10 @@ public class MemberController(MemberService memberService) : ControllerBase
         return Ok(members.Data);
     }
 
-    [HttpPost("{FamilyId}")]
-    public ActionResult CreateMember(string FamilyId, [FromBody] MemberCreateDto member)
+    [HttpPost]
+    public ActionResult CreateMember(MemberCreateDto member)
     {
-        var created = _memberService.CreateMember(FamilyId, member);
+        var created = _memberService.CreateMember(member);
 
         if (!created.Success)
         {

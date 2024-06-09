@@ -1,20 +1,19 @@
-using Chefster.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
+using System.Security.Claims;
+using Chefster.Common;
+using Chefster.Models;
+using Chefster.Services;
+using Chefster.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Chefster.Controllers;
 
 // use this to make swagger ignore this controller if its not really an api
 [ApiExplorerSettings(IgnoreApi = true)]
-public class IndexController : Controller
+public class IndexController(FamilyService familyService) : Controller
 {
-    private readonly ILogger<IndexController> _logger;
-
-    public IndexController(ILogger<IndexController> logger)
-    {
-        _logger = logger;
-    }
+    private readonly FamilyService _familyService = familyService;
 
     [Authorize]
     [Route("/chat")]
@@ -24,15 +23,47 @@ public class IndexController : Controller
     }
 
     [Authorize]
+    [HttpGet]
+    [Route("/createprofile")]
     public IActionResult CreateProfile()
     {
-        return View();
+        var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+        var family = _familyService.GetById(id).Data;
+
+        if (family == null)
+        {
+            var model = new FamilyViewModel
+            {
+                PhoneNumber = "",
+                FamilySize = 1,
+                GenerationDay = DayOfWeek.Sunday,
+                GenerationTime = TimeSpan.Zero,
+                Members = new List<MemberViewModel>
+                {
+                    new()
+                    {
+                        Name = "",
+                        Restrictions = ConsiderationsLists.RestrictionsList,
+                        Goals = ConsiderationsLists.GoalsList,
+                        Cuisines = ConsiderationsLists.CuisinesList
+                    }
+                }
+            };
+
+            return View(model);
+        }
+        else
+        {
+            return View("Profile");
+        }
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        return View(
+            new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
+        );
     }
 
     public IActionResult Index()
@@ -51,5 +82,21 @@ public class IndexController : Controller
     public IActionResult Profile()
     {
         return View();
+    }
+
+    [HttpGet]
+    [Route("/memberform")]
+    public IActionResult MemberForm(int index)
+    {
+        var model = new MemberViewModel
+        {
+            Name = "",
+            Index = index,
+            Restrictions = ConsiderationsLists.RestrictionsList,
+            Goals = ConsiderationsLists.GoalsList,
+            Cuisines = ConsiderationsLists.CuisinesList
+        };
+
+        return PartialView("MemberForm", model);
     }
 }
