@@ -20,7 +20,7 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
             MemberId = consideration.MemberId,
             Type = consideration.Type,
             Value = consideration.Value,
-            CreatedAt = DateTime.UtcNow.ToString()
+            CreatedAt = DateTime.UtcNow
         };
 
         try
@@ -92,7 +92,7 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
         var considerations = _context
             .Considerations.Where(n => mems.Contains(n.MemberId))
             .AsEnumerable() // Load data into memory to use LINQ to Objects
-            .Where(n => (now - DateTime.Parse(n.CreatedAt)).TotalDays <= 7)
+            .Where(n => (now - n.CreatedAt).TotalDays <= 7)
             .ToList();
 
         return ServiceResult<List<ConsiderationsModel>>.SuccessResult(considerations);

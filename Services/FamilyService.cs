@@ -19,6 +19,8 @@ public class FamilyService(ChefsterDbContext context) : IFamily
             return ServiceResult<FamilyModel>.ErrorResult("Family Already Exists");
         }
 
+        family.CreatedAt = DateTime.UtcNow;
+
         try
         {
             _context.Families.Add(family);

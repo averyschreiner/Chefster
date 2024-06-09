@@ -14,7 +14,7 @@ public class ConsiderationsModel
     public required string MemberId { get; set; } // foreign key of family model
     public required ConsiderationsEnum Type { get; set; }
     public required string Value { get; set; }
-    public required string CreatedAt { get; set; }
+    public required DateTime CreatedAt { get; set; }
 }
 
 public class ConsiderationsCreateDto

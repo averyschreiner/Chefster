@@ -2,8 +2,8 @@ namespace Chefster.Enums;
 
 public enum ConsiderationsEnum
 {
-    Cuisine,
-    Goal,
-    Note,
-    Restriction
+    Cuisine = 0,
+    Goal = 1,
+    Note = 2,
+    Restriction = 3
 }
