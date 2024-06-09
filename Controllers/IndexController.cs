@@ -22,7 +22,7 @@ public class IndexController(FamilyService familyService) : Controller
         return View();
     }
 
-    // [Authorize]
+    [Authorize]
     [HttpGet]
     [Route("/createprofile")]
     public IActionResult CreateProfile()
