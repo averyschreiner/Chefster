@@ -13,7 +13,9 @@
       <Content Include=".env" Condition="Exists('.env')">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <PackageReference Include="Hangfire.Console" Version="1.4.3" />
       <PackageReference Include="Hangfire.Core" Version="1.8.*" />
+      <PackageReference Include="Hangfire.Mongo" Version="1.10.6" />
       <PackageReference Include="Hangfire.SqlServer" Version="1.8.*" />
       <PackageReference Include="Hangfire.AspNetCore" Version="1.8.12" />
       <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
@@ -27,6 +29,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         <PrivateAssets>all</PrivateAssets>
       </PackageReference>
+      <PackageReference Include="MongoDB.Driver" Version="2.25.0" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 

@@ -4,9 +4,13 @@ using Chefster;
 using Chefster.Context;
 using Chefster.Services;
 using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,20 +47,39 @@ builder.Services.AddDbContext<ChefsterDbContext>(options =>
 builder.Services.AddScoped<FamilyService>();
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<ConsiderationsService>();
+builder.Services.AddScoped<JobService>();
+builder.Services.AddScoped<EmailService>();
+// builder.Services.AddScoped<GordonService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
 
-// Add Hangfire services.
-builder.Services.AddHangfire(configuration =>
-    configuration
+// Hangfire stuff
+var mongoConnection = Environment.GetEnvironmentVariable("MONGO_CONN");
+var mongoUrlBuilder = new MongoUrlBuilder(mongoConnection);
+var mongoClient = new MongoClient(mongoConnection);
+var migrationOptions = new MongoMigrationOptions
+{
+    MigrationStrategy = new DropMongoMigrationStrategy(),
+    BackupStrategy = new CollectionMongoBackupStrategy()
+};
+
+builder.Services.AddHangfire(
+    (sp, configuration) =>
+    {
+        configuration
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(connString)
+        // .UseSqlServerStorage(connString);
+        .UseMongoStorage(
+            mongoClient,
+            "chefster-hangfire",
+            new MongoStorageOptions { MigrationOptions = migrationOptions, CheckConnection = false }
+        );
+    }
 );
 
-// Add the processing server as IHostedService
 builder.Services.AddHangfireServer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -70,6 +93,8 @@ builder.Services.AddSwaggerGen(c =>
         true
     );
 });
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
