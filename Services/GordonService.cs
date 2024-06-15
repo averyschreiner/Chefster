@@ -149,7 +149,7 @@ public class GordonService(IHttpClientFactory httpClientFactory)
         {
             return new GordonResponseModel { Response = [], Success = false };
         }
-        return new GordonResponseModel { Response = converted, Success = false };
+        return new GordonResponseModel { Response = converted, Success = true };
     }
 
     private List<GordonRecipeModel?> ConvertGordonResponse(string response)
