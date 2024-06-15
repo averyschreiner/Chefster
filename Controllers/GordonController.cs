@@ -1,6 +1,7 @@
 using Chefster.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Chefster.Controllers;
 
@@ -15,15 +16,19 @@ public class GordonController(GordonService gordonService) : ControllerBase
     /// FOR TESTING ONLY
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult> CreatedGordonResponse([FromBody] string question)
+    public async Task<ActionResult> CreatedGordonResponse([FromBody] string request)
     {
-        var response = await _gordonService.GetMessageResponse(question);
+        if (request.IsNullOrEmpty())
+        {
+            return BadRequest("Request must not be empty!");
+        }
+        var response = await _gordonService.GetMessageResponse(request);
 
         if (response.Success != true)
         {
-            return BadRequest($"Failed to get Gordon response");
+            return BadRequest($"Failed to get Gordon response. Error: {response.Error}");
         }
 
-        return Ok(response);
+        return Ok(response.Data);
     }
 }

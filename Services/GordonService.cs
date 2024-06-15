@@ -1,77 +1,129 @@
 using System.Text;
 using System.Text.Json;
+using Chefster.Common;
 using Chefster.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Chefster.Services;
 
 public class GordonService(IHttpClientFactory httpClientFactory)
 {
     public readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    public readonly string API_KEY = Environment.GetEnvironmentVariable("GORDON")!;
+    public readonly string API_KEY = Environment.GetEnvironmentVariable("API_KEY")!;
     public readonly string ASSIST_ID = Environment.GetEnvironmentVariable("ASSIST_ID")!;
 
-    private async Task<List<string?>> CreateThreadAndRun()
+    /*
+        Handles the communication with OpenAI and our assistant, Gordon
+        Order of operations:
+        1. Create a thread
+        2. Create a message (what considerations the user has)
+        3. Create a run for that message
+        4. Retreive the run after completion
+    */
+
+    private async Task<string?> CreateThread()
     {
         var httpClient = _httpClientFactory.CreateClient();
-
-        var id = new { assistant_id = ASSIST_ID };
-
-        // create the content for the request
-        var assistantId = new StringContent(
-            JsonSerializer.Serialize(id),
-            Encoding.UTF8,
-            Application.Json
-        );
 
         // assign headers
         httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
         httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {API_KEY}");
 
-        var threadAndRun = await httpClient.PostAsync(
-            $"https://api.openai.com/v1/threads/runs",
-            assistantId
-        );
+        var thread = await httpClient.PostAsync($"https://api.openai.com/v1/threads", null);
 
         // grab content, parse, and return the run and thread ids
-        var content = await threadAndRun.Content.ReadAsStringAsync();
-        var json = JsonDocument.Parse(content).RootElement;
-
-        var threadId = json.GetProperty("thread_id").GetString();
-        var runId = json.GetProperty("id").GetString();
-
-        if (threadId != null && runId != null)
+        var content = await thread.Content.ReadAsStringAsync();
+        try
         {
-            return [runId, threadId];
+            var json = JsonDocument.Parse(content).RootElement;
+            var threadId = json.GetProperty("id").GetString();
+            if (threadId != null)
+            {
+                return threadId;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            return [];
+            // should log this type of stuff
+            Console.WriteLine($"Failure to obtain thread Id. Error: {ex}");
         }
+        return null;
     }
 
-    // It works without creating a message???
-
-    private async Task CreateMessage(string threadId, StringContent? bodyContent)
+    private async Task<bool> CreateMessage(string threadId, string considerations)
     {
         var httpClient = _httpClientFactory.CreateClient();
 
         httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
         httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {API_KEY}");
 
+        //create request body
+        var jsonBody = new { role = "user", content = considerations };
+        var strContent = new StringContent(
+            JsonSerializer.Serialize(jsonBody),
+            Encoding.UTF8,
+            "application/json"
+        );
+
         var message = await httpClient.PostAsync(
             $"https://api.openai.com/v1/threads/{threadId}/messages",
-            bodyContent
+            strContent
         );
 
         // make sure we get a successful call before continuing
-        //message.EnsureSuccessStatusCode();
+        try
+        {
+            message.EnsureSuccessStatusCode();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failure to create message. Error: {ex}");
+            return false;
+        }
+    }
+
+    public async Task<string?> CreateRun(string threadId)
+    {
+        var httpClient = _httpClientFactory.CreateClient();
+        // assign headers
+        httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
+        httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {API_KEY}");
+
+        var jsonBody = new { assistant_id = ASSIST_ID };
+        var strContent = new StringContent(
+            JsonSerializer.Serialize(jsonBody),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var run = await httpClient.PostAsync(
+            $"https://api.openai.com/v1/threads/{threadId}/runs",
+            strContent
+        );
+
+        // grab content, parse, and return the run and thread ids
+        var content = await run.Content.ReadAsStringAsync();
+        try
+        {
+            var json = JsonDocument.Parse(content).RootElement;
+            var runId = json.GetProperty("id").GetString();
+            if (runId != null)
+            {
+                return runId;
+            }
+        }
+        catch (Exception ex)
+        {
+            // should log this type of stuff
+            Console.WriteLine($"Failure to obtain run Id. Error: {ex}");
+        }
+        return null;
     }
 
     //will return a gordonResponseModel eventually
-    public async Task<GordonResponseModel> GetMessageResponse(string considerations)
+    public async Task<ServiceResult<GordonResponseModel>> GetMessageResponse(string considerations)
     {
         var MAX_ATTEMPTS = 10;
         var httpClient = _httpClientFactory.CreateClient();
@@ -79,29 +131,29 @@ public class GordonService(IHttpClientFactory httpClientFactory)
         httpClient.DefaultRequestHeaders.Add("OpenAI-Beta", "assistants=v2");
         httpClient.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer {API_KEY}");
 
-        // create run and thread ids and save them
-        var threadAndRunIds = await CreateThreadAndRun();
-        if (threadAndRunIds.Count != 2)
+        // create a thread, message, and run
+        // Make sure all goes well
+        var threadId = await CreateThread();
+        if (threadId == null)
         {
-            return new GordonResponseModel { Response = [], Success = false };
+            return ServiceResult<GordonResponseModel>.ErrorResult(
+                "Failed to create threadId. threadId was null"
+            );
         }
 
-        var ids = new { runId = threadAndRunIds[0]!, threadId = threadAndRunIds[1]! };
-
-        // create request body
-        var jsonBody = new
+        var message = await CreateMessage(threadId!, considerations);
+        if (!message)
         {
-            assistant_id = Environment.GetEnvironmentVariable("GORDON_ID"),
-            thread = new { messages = new[] { new { role = "user", content = considerations } } }
-        };
-        var strContent = new StringContent(
-            JsonSerializer.Serialize(jsonBody),
-            Encoding.UTF8,
-            "application/json"
-        );
+            return ServiceResult<GordonResponseModel>.ErrorResult("Failed to create message");
+        }
 
-        //create message
-        await CreateMessage(ids.threadId, strContent);
+        var runId = await CreateRun(threadId);
+        if (runId == null)
+        {
+            return ServiceResult<GordonResponseModel>.ErrorResult(
+                "Failed to create run. runId was null"
+            );
+        }
 
         // loop until we get a response back of complete
         var attempts = 0;
@@ -110,7 +162,7 @@ public class GordonService(IHttpClientFactory httpClientFactory)
             attempts += 1;
 
             var successCheck = await httpClient.GetAsync(
-                $"https://api.openai.com/v1/threads/{ids.threadId}/runs/{ids.runId}"
+                $"https://api.openai.com/v1/threads/{threadId}/runs/{runId}"
             );
 
             var successCheckContent = await successCheck.Content.ReadAsStringAsync();
@@ -119,17 +171,34 @@ public class GordonService(IHttpClientFactory httpClientFactory)
                 .RootElement.GetProperty("status")
                 .GetString();
 
+            // make sure we catch status's that would result in a bad response
+            if (
+                status == "requires_action"
+                || status == "cancelling"
+                || status == "cancelled"
+                || status == "failed"
+                || status == "incomplete"
+                || status == "expired"
+            )
+            {
+                return ServiceResult<GordonResponseModel>.ErrorResult(
+                    $"Run loop object had the status code: {status}. Exiting"
+                );
+            }
+
+            // if all is well exit the loop
             if (status == "completed")
             {
                 break;
             }
-            Console.WriteLine("Trying again!");
-            await Task.Delay(3000); // wait a few seconds before trying again
+
+            // wait a few seconds before trying again
+            await Task.Delay(3000);
         } while (attempts != MAX_ATTEMPTS);
 
         // try to grab the response
         var gordonResponse = await httpClient.GetAsync(
-            $"https://api.openai.com/v1/threads/{ids.threadId}/messages"
+            $"https://api.openai.com/v1/threads/{threadId}/messages"
         );
         var content = await gordonResponse.Content.ReadAsStringAsync();
 
@@ -137,22 +206,43 @@ public class GordonService(IHttpClientFactory httpClientFactory)
         if (attempts == MAX_ATTEMPTS || content == null)
         {
             Console.WriteLine($"Failed to retrieve Gordon response");
-            return new GordonResponseModel { Response = [], Success = false };
+            return ServiceResult<GordonResponseModel>.ErrorResult(
+                "Failed to retrieve Gordon response"
+            );
         }
 
         // get final gordon response
         var json = JsonDocument.Parse(content).RootElement;
-        var result = json.GetProperty("data")[0].GetProperty("content")[0].ToString();
 
-        var converted = ConvertGordonResponse(result);
-        if (converted.IsNullOrEmpty())
+        try
         {
-            return new GordonResponseModel { Response = [], Success = false };
+            var result = json.GetProperty("data")[0].GetProperty("content")[0].ToString();
+            if (result == null)
+            {
+                return ServiceResult<GordonResponseModel>.ErrorResult(
+                    "Gordons response content was null. Exiting"
+                );
+            }
+            var converted = ConvertGordonResponse(result);
+
+            if (converted.IsNullOrEmpty())
+            {
+                return ServiceResult<GordonResponseModel>.ErrorResult("");
+            }
+            return ServiceResult<GordonResponseModel>.SuccessResult(
+                new GordonResponseModel { Response = converted, Success = true }
+            );
         }
-        return new GordonResponseModel { Response = converted, Success = true };
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to grab final result from run. Error: {ex}");
+            return ServiceResult<GordonResponseModel>.ErrorResult(
+                $"Failed to grab final result from run. Result object did not contain the correct json keys. Error: {ex}"
+            );
+        }
     }
 
-    private List<GordonRecipeModel?> ConvertGordonResponse(string response)
+    private static List<GordonRecipeModel?> ConvertGordonResponse(string response)
     {
         var options = new JsonSerializerOptions
         {
@@ -172,7 +262,7 @@ public class GordonService(IHttpClientFactory httpClientFactory)
 
             foreach (var r in recipes_json)
             {
-                //Console.WriteLine(r);
+                Console.WriteLine(r);
                 var recipe = JsonSerializer.Deserialize<GordonRecipeModel>(r, options);
                 recipes.Add(recipe);
             }
