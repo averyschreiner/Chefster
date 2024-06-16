@@ -30,5 +30,6 @@ jobs:
 
     - name: Run tests
       run: |
+        ls
         cd Chefster.Tests/
         dotnet test --no-build --verbosity normal
