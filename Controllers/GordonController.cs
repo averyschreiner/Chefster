@@ -1,0 +1,64 @@
+using Chefster.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Chefster.Controllers;
+
+[Authorize]
+[Route("api/gordon")]
+[ApiController]
+public class GordonController(
+    GordonService gordonService,
+    JobService jobService,
+    EmailService emailService
+) : ControllerBase
+{
+    private readonly GordonService _gordonService = gordonService;
+    private readonly JobService _jobService = jobService;
+    private readonly EmailService _emailService = emailService;
+
+    /// <summary>
+    /// FOR TESTING ONLY. Send consideration in body
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult> CreatedGordonResponse([FromBody] string request)
+    {
+        if (request.IsNullOrEmpty())
+        {
+            return BadRequest("Request must not be empty!");
+        }
+        var response = await _gordonService.GetMessageResponse(request);
+
+        if (response.Success != true)
+        {
+            return BadRequest($"Failed to get Gordon response. Error: {response.Error}");
+        }
+
+        return Ok(response.Data);
+    }
+
+    /// <summary>
+    /// FOR TESTING ONLY. Create a response based on a families considerations and send an email.
+    /// </summary>
+    [HttpPost("{familyId}")]
+    public ActionResult CreatedGordonResponseForFamily(string familyId)
+    {
+        //    var formatted = _jobService.BuildGordonRequest(familyId);
+
+        //     if (formatted == null)
+        //     {
+        //         return BadRequest("Formatted string was null! Does the family have considerations?");
+        //     }
+        //     var response = await _gordonService.GetMessageResponse(formatted);
+
+        //     if (response.Success != true)
+        //     {
+        //         return BadRequest($"Failed to get Gordon response. Error: {response.Error}");
+        //     }
+
+        _jobService.CreateorUpdateEmailJob(familyId);
+
+        return Ok();
+    }
+}

@@ -3,8 +3,13 @@ using Auth0.AspNetCore.Authentication;
 using Chefster;
 using Chefster.Context;
 using Chefster.Services;
+using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,20 +41,59 @@ builder.Services.AddDbContext<ChefsterDbContext>(options =>
     options.UseSqlServer(connString);
 });
 
+//GlobalConfiguration.Configuration.UseSqlServerStorage("connection String");
+
 builder.Services.AddScoped<FamilyService>();
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<ConsiderationsService>();
+builder.Services.AddScoped<JobService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<GordonService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
 
+// Hangfire stuff
+var mongoConnection = Environment.GetEnvironmentVariable("MONGO_CONN");
+var mongoUrlBuilder = new MongoUrlBuilder(mongoConnection);
+var mongoClient = new MongoClient(mongoConnection);
+var migrationOptions = new MongoMigrationOptions
+{
+    MigrationStrategy = new DropMongoMigrationStrategy(),
+    BackupStrategy = new CollectionMongoBackupStrategy()
+};
+
+builder.Services.AddHangfire(
+    (sp, configuration) =>
+    {
+        configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        // .UseSqlServerStorage(connString);
+        .UseMongoStorage(
+            mongoClient,
+            "chefster-hangfire",
+            new MongoStorageOptions { MigrationOptions = migrationOptions, CheckConnection = false }
+        );
+    }
+);
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Chefster Backend", Version = "v1" });
-    c.IncludeXmlComments(Path.Combine(
-        AppContext.BaseDirectory,
-        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"), true);
+    c.IncludeXmlComments(
+        Path.Combine(
+            AppContext.BaseDirectory,
+            $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"
+        ),
+        true
+    );
 });
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -75,6 +119,9 @@ if (isProd == "false")
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Chefster Backend");
     });
 }
+
+app.UseHangfireDashboard();
+app.MapHangfireDashboard();
 
 app.UseHttpsRedirection();
 

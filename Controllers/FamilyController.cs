@@ -14,12 +14,14 @@ namespace Chefster.Controllers;
 public class FamilyController(
     ConsiderationsService considerationsService,
     FamilyService familyService,
-    MemberService memberService
+    MemberService memberService,
+    JobService jobService
 ) : ControllerBase
 {
     private readonly ConsiderationsService _considerationsService = considerationsService;
     private readonly FamilyService _familyService = familyService;
     private readonly MemberService _memberService = memberService;
+    private readonly JobService _jobService = jobService;
 
     [HttpGet("{Id}")]
     public ActionResult<FamilyModel> GetFamily(string Id)
@@ -44,69 +46,36 @@ public class FamilyController(
     [HttpPost]
     public IActionResult CreateFamily([FromForm] FamilyViewModel Family)
     {
-        Console.WriteLine("Family created:");
-        Console.WriteLine("Phone: " + Family.PhoneNumber);
-        Console.WriteLine("Size: " + Family.FamilySize);
-        Console.WriteLine("Day: " + Family.GenerationDay.ToString());
-        Console.WriteLine("Time: " + Family.GenerationTime);
-        Console.WriteLine("\nMembers:");
-        foreach (MemberViewModel member in Family.Members)
-        {
-            Console.WriteLine("Name: " + member.Name);
-            Console.Write("Restrictions: ");
-            foreach (SelectListItem r in member.Restrictions)
-            {
-                if (r.Selected)
-                {
-                    Console.Write(r.Text + ", ");
-                }
-            }
-            Console.Write("\nGoals: ");
-            foreach (SelectListItem g in member.Goals)
-            {
-                if (g.Selected)
-                {
-                    Console.Write(g.Text + ", ");
-                }
-            }
-            Console.Write("\nCuisines: ");
-            foreach (SelectListItem c in member.Cuisines)
-            {
-                if (c.Selected)
-                {
-                    Console.Write(c.Text + ", ");
-                }
-            }
-            Console.WriteLine("\n");
-        }
-
         // create the new family
-        FamilyModel NewFamily =
-            new()
-            {
-                // these shouldn't  be null so we added a "!"
-                Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!,
-                Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
-                CreatedAt = DateTime.UtcNow,
-                PhoneNumber = Family.PhoneNumber,
-                FamilySize = Family.FamilySize,
-                GenerationDay = Family.GenerationDay,
-                GenerationTime = Family.GenerationTime
-            };
+        var NewFamily = new FamilyModel
+        {
+            // these shouldn't  be null so we added a "!"
+            Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!,
+            Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
+            CreatedAt = DateTime.UtcNow,
+            PhoneNumber = Family.PhoneNumber,
+            FamilySize = Family.FamilySize,
+            GenerationDay = Family.GenerationDay,
+            GenerationTime = Family.GenerationTime
+        };
 
-        _familyService.CreateFamily(NewFamily);
+        // create family and job
+        var created = _familyService.CreateFamily(NewFamily);
+        if (created.Success)
+        {
+            _jobService.CreateorUpdateEmailJob(created.Data!.Id);
+        }
 
         foreach (MemberViewModel Member in Family.Members)
         {
             // create the new member
-            MemberCreateDto NewMember =
-                new()
-                {
-                    FamilyId = User
-                        .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
-                        ?.Value!,
-                    Name = Member.Name
-                };
+            var NewMember = new MemberCreateDto
+            {
+                FamilyId = User
+                    .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+                    ?.Value!,
+                Name = Member.Name
+            };
 
             MemberModel CreatedMember = _memberService.CreateMember(NewMember).Data!;
 
@@ -186,6 +155,9 @@ public class FamilyController(
         {
             return BadRequest($"Error: {updated.Error}");
         }
+
+        // once we updated successfully, not now update the job with new generation times
+        _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
 
         return Ok(updated.Data);
     }
