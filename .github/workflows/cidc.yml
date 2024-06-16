@@ -29,4 +29,6 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Run tests
-      run: dotnet test Chefster.Tests/ --configuration Release --no-build --verbosity normal
+      run: |
+      cd Chefster.Tests/
+      dotnet test --no-build --verbosity normal
