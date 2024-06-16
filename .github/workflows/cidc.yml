@@ -31,4 +31,4 @@ jobs:
     - name: Run tests
       run: |
         ls
-        vstest Chefster.Tests --logger:console --verbosity:normal
+        dotnet test Chefster.Tests/Chefster.Tests.csproj
