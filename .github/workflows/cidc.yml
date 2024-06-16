@@ -29,4 +29,6 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+      run: |
+      cd Chefster.Tests/
+      dotnet test --no-build --verbosity normal
