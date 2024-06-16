@@ -20,7 +20,12 @@ public class EmailService()
             Credentials = new NetworkCredential(fromEmail, pwd)
         };
 
-        var message = new MailMessage(fromEmail, email) { Subject = subject, Body = body };
+        var message = new MailMessage(fromEmail, email)
+        {
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
 
         try
         {
@@ -28,7 +33,7 @@ public class EmailService()
         }
         catch (Exception e)
         {
-            Console.WriteLine($"ERROR SENDING EMAIL: {e}");
+            Console.WriteLine($"Error sending email: {e}");
         }
     }
 }

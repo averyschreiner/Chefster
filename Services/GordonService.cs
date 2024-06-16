@@ -262,7 +262,6 @@ public class GordonService(IHttpClientFactory httpClientFactory)
 
             foreach (var r in recipes_json)
             {
-                Console.WriteLine(r);
                 var recipe = JsonSerializer.Deserialize<GordonRecipeModel>(r, options);
                 recipes.Add(recipe);
             }
