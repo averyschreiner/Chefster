@@ -29,4 +29,5 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run tests
-      run: dotnet test Chefster.Tests/ --no-build --verbosity normal
+      run: |
+      vstest.console.exe /home/runner/work/Chefster/Chefster.Tests/bin/Debug/net8.0/Chefster.Tests.dll
