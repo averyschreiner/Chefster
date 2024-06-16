@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  build:
+  Unit Tests:
 
     runs-on: ubuntu-latest
 
@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.x'  # Specify the .NET version, use '8.x' to always get the latest minor version
+        dotnet-version: '8.x'
 
     - name: Install dependencies
       run: dotnet restore
@@ -29,6 +29,4 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Run tests
-      run: |
-        cd Chefster.Tests/
-        dotnet test --no-build --verbosity normal
+      run: dotnet test Chefster.Tests/ --no-build --verbosity normal
