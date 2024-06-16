@@ -7,7 +7,6 @@ using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
-using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
@@ -49,7 +48,7 @@ builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<ConsiderationsService>();
 builder.Services.AddScoped<JobService>();
 builder.Services.AddScoped<EmailService>();
-// builder.Services.AddScoped<GordonService>();
+builder.Services.AddScoped<GordonService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();

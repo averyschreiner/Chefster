@@ -63,7 +63,7 @@ public class FamilyController(
         var created = _familyService.CreateFamily(NewFamily);
         if (created.Success)
         {
-            _jobService.CreateEmailJob(created.Data!.Id);
+            _jobService.CreateorUpdateEmailJob(created.Data!.Id);
         }
 
         foreach (MemberViewModel Member in Family.Members)
@@ -157,7 +157,7 @@ public class FamilyController(
         }
 
         // once we updated successfully, not now update the job with new generation times
-        _jobService.UpdateEmailJob(updated.Data!.Id);
+        _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
 
         return Ok(updated.Data);
     }
