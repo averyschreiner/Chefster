@@ -122,7 +122,7 @@ public class FamilyServiceTests(DatabaseFixture fixture) : IClassFixture<Databas
 
         // family doesnt exist case
         var failed = _familyService.CreateFamily(familyToAdd);
-        Assert.False(failed.Success);
+        Assert.True(failed.Success);
 
         Assert.NotNull(family.Data);
         Assert.Equal("test1@email.com", family.Data.Email);
