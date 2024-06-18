@@ -70,6 +70,39 @@ public class DatabaseFixture
                 MemberId = "mem3",
                 FamilyId = "1",
                 Name = "testName3"
+            },
+             new MemberModel
+            {
+                MemberId = "mem4",
+                FamilyId = "4",
+                Name = "testName4"
+            }
+        );
+
+        Context.Considerations.AddRange(
+            new ConsiderationsModel
+            {
+                ConsiderationId = "consider1",
+                MemberId = "mem1",
+                Type = Enums.ConsiderationsEnum.Goal,
+                Value = "Lose weight",
+                CreatedAt = DateTime.Now.AddDays(-4)
+            },
+            new ConsiderationsModel
+            {
+                ConsiderationId = "consider2",
+                MemberId = "mem1",
+                Type = Enums.ConsiderationsEnum.Note,
+                Value = "Gain weight",
+                CreatedAt = DateTime.Now.AddDays(-8)
+            },
+            new ConsiderationsModel
+            {
+                ConsiderationId = "consider3",
+                MemberId = "mem4",
+                Type = Enums.ConsiderationsEnum.Restriction,
+                Value = "More energy",
+                CreatedAt = DateTime.Now.AddDays(-2)
             }
         );
         Context.SaveChanges();
