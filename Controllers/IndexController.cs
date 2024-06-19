@@ -38,6 +38,7 @@ public class IndexController(FamilyService familyService) : Controller
                 FamilySize = 1,
                 GenerationDay = DayOfWeek.Sunday,
                 GenerationTime = TimeSpan.Zero,
+                TimeZone =  "",
                 Members = new List<MemberViewModel>
                 {
                     new()

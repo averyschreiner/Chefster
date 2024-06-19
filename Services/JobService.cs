@@ -26,6 +26,22 @@ public class JobService(
     public void CreateorUpdateEmailJob(string familyId)
     {
         var family = _familyService.GetById(familyId).Data;
+        TimeZoneInfo timeZone;
+
+        if (TimeZoneInfo.TryConvertIanaIdToWindowsId(family.TimeZone, out string windowsTimeZoneId))
+        {
+            Console.WriteLine(windowsTimeZoneId);
+            timeZone = TimeZoneInfo.FindSystemTimeZoneById(windowsTimeZoneId);
+        }
+        else
+        {
+            timeZone = TimeZoneInfo.Utc;
+        }
+        
+        var options = new RecurringJobOptions
+        {
+            TimeZone = timeZone
+        };
 
         // create the job for the family
         if (family != null)
@@ -37,7 +53,8 @@ public class JobService(
                     family.GenerationDay,
                     family.GenerationTime.Hours,
                     family.GenerationTime.Minutes
-                )
+                ),
+                options
             );
         }
     }

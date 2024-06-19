@@ -36,6 +36,7 @@ public class FamilyServiceTests(DatabaseFixture fixture) : IClassFixture<Databas
             FamilySize = 5,
             GenerationDay = DayOfWeek.Sunday,
             GenerationTime = new TimeSpan(1000),
+            TimeZone = "America/Chicago",
             PhoneNumber = "1112223333"
         };
 
@@ -68,6 +69,7 @@ public class FamilyServiceTests(DatabaseFixture fixture) : IClassFixture<Databas
             FamilySize = 4,
             GenerationDay = DayOfWeek.Wednesday,
             GenerationTime = new TimeSpan(1000),
+            TimeZone = "America/Chicago",
             PhoneNumber = "9998887777"
         };
 
