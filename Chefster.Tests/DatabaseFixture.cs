@@ -38,7 +38,8 @@ public class DatabaseFixture
                 FamilySize = 2,
                 GenerationDay = DayOfWeek.Friday,
                 GenerationTime = new TimeSpan(10000),
-                PhoneNumber = "0001112222"
+                PhoneNumber = "0001112222",
+                TimeZone="America/Chicago"
             },
             new FamilyModel
             {
@@ -48,7 +49,8 @@ public class DatabaseFixture
                 FamilySize = 8,
                 GenerationDay = DayOfWeek.Monday,
                 GenerationTime = new TimeSpan(19000),
-                PhoneNumber = "5556664444"
+                PhoneNumber = "5556664444",
+                TimeZone="America/Chicago"
             }
         );
 
