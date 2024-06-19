@@ -16,6 +16,7 @@ public class FamilyModel
     public required int FamilySize { get; set; }
     public required DayOfWeek GenerationDay { get; set; }
     public required TimeSpan GenerationTime { get; set; }
+    public required string TimeZone { get; set; }
 }
 
 public class FamilyUpdateDto

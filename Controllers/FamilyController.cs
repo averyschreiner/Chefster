@@ -56,7 +56,8 @@ public class FamilyController(
             PhoneNumber = Family.PhoneNumber,
             FamilySize = Family.FamilySize,
             GenerationDay = Family.GenerationDay,
-            GenerationTime = Family.GenerationTime
+            GenerationTime = Family.GenerationTime,
+            TimeZone = Family.TimeZone,
         };
 
         // create family and job

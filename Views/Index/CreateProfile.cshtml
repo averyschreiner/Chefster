@@ -16,14 +16,14 @@
                     <div class="col">
                         <div class="form-group">
                             <label asp-for="PhoneNumber">Phone Number</label>
-                            <input asp-for="PhoneNumber" type="tel" pattern="^\+?\d{0,13}" class="form-control" required>
+                            <input asp-for="PhoneNumber" type="tel" pattern="^\+?\d{0,13}" class="form-control" required />
                             <small>Format: +1234567890</small>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label asp-for="FamilySize">Number of Family Members</label>
-                            <input asp-for="FamilySize" type="number" id="FamilySize" class="form-control" min="1" max="10" value="1" required>
+                            <input asp-for="FamilySize" type="number" id="FamilySize" class="form-control" min="1" max="10" value="1" required />
                         </div>
                     </div>
                 </div>
@@ -47,6 +47,7 @@
                         </div>
                     </div>
                 </div>
+                <input type="hidden" id="TimeZone" asp-for="TimeZone" value="" required />
                 <div class="form-group pt-3">
                     <button type="submit" class="btn btn-primary w-100">Create Profile</button>
                 </div>
@@ -58,6 +59,10 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // set the time zone
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            document.getElementById('TimeZone').value = timeZone;
+
             const familySizeInput = document.getElementById('FamilySize');
             const familyMembersContainer = document.getElementById('familyMembersContainer');
 

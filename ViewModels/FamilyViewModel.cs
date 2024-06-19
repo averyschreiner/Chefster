@@ -6,5 +6,6 @@ public class FamilyViewModel
     public required int FamilySize { get; set; }
     public required DayOfWeek GenerationDay { get; set; }
     public required TimeSpan GenerationTime { get; set; }
+    public required string TimeZone { get; set; }
     public required List<MemberViewModel> Members { get; set; }
 }
