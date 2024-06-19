@@ -60,6 +60,27 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
         }
     }
 
+    public ServiceResult<ConsiderationsModel> GetConsiderationById(string considerationId)
+    {
+        try
+        {
+            var consideration = _context.Considerations.Find(considerationId);
+
+            if (consideration == null)
+            {
+                return ServiceResult<ConsiderationsModel>.ErrorResult($"Consideration was null");
+            }
+
+            return ServiceResult<ConsiderationsModel>.SuccessResult(consideration);
+        }
+        catch (SqlException e)
+        {
+            return ServiceResult<ConsiderationsModel>.ErrorResult(
+                $"Failed to find consideration with id {considerationId}. Error: {e}"
+            );
+        }
+    }
+
     public ServiceResult<List<ConsiderationsModel>> GetAllFamilyConsiderations(string familyId)
     {
         try
@@ -99,12 +120,13 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
     }
 
     public ServiceResult<ConsiderationsModel> UpdateConsideration(
+        string considerationId,
         ConsiderationsUpdateDto consideration
     )
     {
         try
         {
-            var existingConsideration = _context.Considerations.Find(consideration.Id);
+            var existingConsideration = _context.Considerations.Find(considerationId);
             if (existingConsideration == null)
             {
                 return ServiceResult<ConsiderationsModel>.ErrorResult(
@@ -120,7 +142,7 @@ public class ConsiderationsService(ChefsterDbContext context) : IConsiderations
         catch (SqlException e)
         {
             return ServiceResult<ConsiderationsModel>.ErrorResult(
-                $"Failed to update consideration with Id {consideration.Id}. Error: {e}"
+                $"Failed to update consideration with Id {considerationId}. Error: {e}"
             );
         }
     }
