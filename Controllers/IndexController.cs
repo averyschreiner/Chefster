@@ -36,6 +36,9 @@ public class IndexController(FamilyService familyService) : Controller
             {
                 PhoneNumber = "",
                 FamilySize = 1,
+                NumberOfBreakfastMeals = 0,
+                NumberOfLunchMeals = 0,
+                NumberOfDinnerMeals = 7,
                 GenerationDay = DayOfWeek.Sunday,
                 GenerationTime = TimeSpan.Zero,
                 TimeZone =  "",
@@ -83,21 +86,5 @@ public class IndexController(FamilyService familyService) : Controller
     public IActionResult Profile()
     {
         return View();
-    }
-
-    [HttpGet]
-    [Route("/memberform")]
-    public IActionResult MemberForm(int index)
-    {
-        var model = new MemberViewModel
-        {
-            Name = "",
-            Index = index,
-            Restrictions = ConsiderationsLists.RestrictionsList,
-            Goals = ConsiderationsLists.GoalsList,
-            Cuisines = ConsiderationsLists.CuisinesList
-        };
-
-        return PartialView("MemberForm", model);
     }
 }

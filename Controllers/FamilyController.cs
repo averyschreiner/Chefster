@@ -55,6 +55,9 @@ public class FamilyController(
             CreatedAt = DateTime.UtcNow,
             PhoneNumber = Family.PhoneNumber,
             FamilySize = Family.FamilySize,
+            NumberOfBreakfastMeals = Family.NumberOfBreakfastMeals,
+            NumberOfLunchMeals = Family.NumberOfLunchMeals,
+            NumberOfDinnerMeals = Family.NumberOfDinnerMeals,
             GenerationDay = Family.GenerationDay,
             GenerationTime = Family.GenerationTime,
             TimeZone = Family.TimeZone,
@@ -75,7 +78,8 @@ public class FamilyController(
                 FamilyId = User
                     .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
                     ?.Value!,
-                Name = Member.Name
+                Name = Member.Name,
+                Notes = Member.Notes
             };
 
             MemberModel CreatedMember = _memberService.CreateMember(NewMember).Data!;
