@@ -1,0 +1,75 @@
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }}
+        h1 {{
+            color: #333;
+        }}
+        h2 {{
+            color: #666;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }}
+        ul {{
+            list-style-type: disc;
+            margin-left: 20px;
+        }}
+        li {{
+            margin-bottom: 5px;
+            font-size: 14px; 
+        }}
+        .thickLine {{
+            border: none;
+            height: 5px;
+            background-color: #000;
+            margin: 20px 0;
+        }}
+        .content {{
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        td {{
+            padding: 5px;
+            vertical-align: top;
+        }}
+    </style>
+<div class=""container"">
+    <h1>Here are your meals for the week! Chef's Kiss ;)</h1>
+    <h2>Your Grocery List:</h2>
+    <div class=""content"">
+        <table>
+            <tr>
+                <td>
+                    <ul>
+                        {string.Join("", allIngredients.Take(allIngredients.Count / 2 + 1).Select(ingredient => $"<li>{ingredient}</li>"))}
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        {string.Join("", allIngredients.Skip(allIngredients.Count / 2 + 1).Select(ingredient => $"<li>{ingredient}</li>"))}
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr class=""thickLine"">
+</div>
