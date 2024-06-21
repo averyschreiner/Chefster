@@ -2,6 +2,7 @@ using System.Text;
 using Chefster.Models;
 using Hangfire;
 using Hangfire.Storage;
+using MongoDB.Driver;
 
 namespace Chefster.Services;
 
@@ -63,7 +64,7 @@ public class JobService(
     {
         // grab family, get gordon response, build email
         var family = _familyService.GetById(familyId).Data;
-        var builtRequest = BuildGordonRequest(familyId)!;
+        var builtRequest = BuildGordonRequest(familyId, family.NumberOfBreakfastMeals, family.NumberOfLunchMeals, family.NumberOfDinnerMeals)!;
         var gordonResponse = await _gordonService.GetMessageResponse(builtRequest);
         var body = BuildEmail(gordonResponse.Data!);
 
@@ -71,17 +72,46 @@ public class JobService(
         {
             _emailService.SendEmail(
                 family.Email,
-                "Chefster - Your weekly meal plan has arrived!",
+                "Your weekly meal plan has arrived!",
                 body
             );
         }
     }
 
-    public string? BuildGordonRequest(string familyId)
+    public string? BuildGordonRequest(string familyId, int numberOfBreakfastMeals, int numberOfLunchMeals, int numberOfDinnerMeals)
     {
         var stringBuiler = new StringBuilder();
-        var gordonConsiderations =
-            "Build 7 total recipes. Here is a list of dietary considerations. The list follow the pattern of considerationType = considerationValue.\n";
+
+        List<string> mealCounts = new List<string>();
+        string numberOfMeals = "";
+
+        if (numberOfBreakfastMeals > 0)
+        {
+            mealCounts.Add($"{numberOfBreakfastMeals} breakfast");
+        }
+        if (numberOfLunchMeals > 0)
+        {
+            mealCounts.Add($"{numberOfLunchMeals} lunch");
+        }
+        if (numberOfDinnerMeals > 0)
+        {
+            mealCounts.Add($"{numberOfDinnerMeals} dinner");
+        }
+
+        if (mealCounts.Count == 1)
+        {
+            numberOfMeals = mealCounts[0];
+        }
+        else if (mealCounts.Count == 2)
+        {
+            numberOfMeals = $"{mealCounts[0]} and {mealCounts[1]}";
+        }
+        else
+        {
+            numberOfMeals = $"{mealCounts[0]}, {mealCounts[1]}, and {mealCounts[2]}";
+        }
+
+        var gordonConsiderations = $"Create {numberOfMeals} recipes. Here is a list of dietary considerations. The list follow the pattern of considerationType = considerationValue.\n";
         var considerations = _considerationService.GetAllFamilyConsiderations(familyId).Data;
 
         if (considerations == null)
