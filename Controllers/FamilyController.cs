@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Chefster.Common;
 using Chefster.Models;
 using Chefster.Services;
 using Chefster.ViewModels;
@@ -94,7 +95,7 @@ public class FamilyController(
                         new()
                         {
                             MemberId = CreatedMember.MemberId,
-                            Type = Enums.ConsiderationsEnum.Restriction,
+                            Type = ConsiderationsEnum.Restriction,
                             Value = r.Text
                         };
 
@@ -110,7 +111,7 @@ public class FamilyController(
                         new()
                         {
                             MemberId = CreatedMember.MemberId,
-                            Type = Enums.ConsiderationsEnum.Goal,
+                            Type = ConsiderationsEnum.Goal,
                             Value = g.Text
                         };
 
@@ -126,7 +127,7 @@ public class FamilyController(
                         new()
                         {
                             MemberId = CreatedMember.MemberId,
-                            Type = Enums.ConsiderationsEnum.Cuisine,
+                            Type = ConsiderationsEnum.Cuisine,
                             Value = c.Text
                         };
 

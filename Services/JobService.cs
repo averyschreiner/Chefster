@@ -1,22 +1,24 @@
 using System.Text;
 using Chefster.Models;
 using Hangfire;
-using Hangfire.Storage;
 using MongoDB.Driver;
+using static Chefster.Common.ConsiderationsEnum;
 
 namespace Chefster.Services;
 
 public class JobService(
     ConsiderationsService considerationsService,
-    FamilyService familyService,
     EmailService emailService,
-    GordonService gordonService
+    FamilyService familyService,
+    GordonService gordonService,
+    MemberService memberService
 )
 {
     private readonly ConsiderationsService _considerationService = considerationsService;
-    private readonly FamilyService _familyService = familyService;
     private readonly EmailService _emailService = emailService;
+    private readonly FamilyService _familyService = familyService;
     private readonly GordonService _gordonService = gordonService;
+    private readonly MemberService _memberService = memberService;
 
     /*
     The service is responsible for created and updating jobs that will
@@ -64,7 +66,7 @@ public class JobService(
     {
         // grab family, get gordon response, build email
         var family = _familyService.GetById(familyId).Data;
-        var builtRequest = BuildGordonRequest(familyId, family.NumberOfBreakfastMeals, family.NumberOfLunchMeals, family.NumberOfDinnerMeals)!;
+        var builtRequest = BuildGordonPrompt(family!)!;
         var gordonResponse = await _gordonService.GetMessageResponse(builtRequest);
         var body = BuildEmail(gordonResponse.Data!);
 
@@ -78,12 +80,20 @@ public class JobService(
         }
     }
 
-    public string? BuildGordonRequest(string familyId, int numberOfBreakfastMeals, int numberOfLunchMeals, int numberOfDinnerMeals)
+    public string BuildGordonPrompt(FamilyModel family)
     {
-        var stringBuiler = new StringBuilder();
+        string mealCounts = GetMealCountsText(family.NumberOfBreakfastMeals, family.NumberOfLunchMeals, family.NumberOfDinnerMeals);
+        string allConsiderations = GetConsiderationsText(family.Id);
+        // TODO: get previous meals
+        string gordonPrompt = $"Create {mealCounts} recipes. Here is a list of the dietary considerations:\n{allConsiderations}";
 
+        return gordonPrompt.ToString();
+    }
+
+    private string GetMealCountsText(int numberOfBreakfastMeals, int numberOfLunchMeals, int numberOfDinnerMeals)
+    {
         List<string> mealCounts = new List<string>();
-        string numberOfMeals = "";
+        string mealCountsText = "";
 
         if (numberOfBreakfastMeals > 0)
         {
@@ -98,35 +108,76 @@ public class JobService(
             mealCounts.Add($"{numberOfDinnerMeals} dinner");
         }
 
-        if (mealCounts.Count == 1)
+        switch (mealCounts.Count)
         {
-            numberOfMeals = mealCounts[0];
+            // maybe through an error? this case only occurs if the user wants 0 breakfast, lunch, and dinner recipes
+            case 0:
+                mealCountsText = "no";
+                break;
+            case 1:
+                mealCountsText = mealCounts[0];
+                break;
+            case 2:
+                mealCountsText = $"{mealCounts[0]} and {mealCounts[1]}";
+                break;
+            case 3:
+                mealCountsText = $"{mealCounts[0]}, {mealCounts[1]}, and {mealCounts[2]}";
+                break;
         }
-        else if (mealCounts.Count == 2)
+
+        return mealCountsText;
+    }
+
+    private string GetConsiderationsText(string familyId)
+    {
+        var considerationsText = new StringBuilder();
+
+        var result = _memberService.GetByFamilyId(familyId);
+
+        if (result.Success)
         {
-            numberOfMeals = $"{mealCounts[0]} and {mealCounts[1]}";
+            var members = result.Data;
+            foreach (var member in members!)
+            {
+                List<string> restrictions = new List<string>();
+                List<string> goals = new List<string>();
+                List<string> cuisines = new List<string>();
+                var result2 = _considerationService.GetMemberConsiderations(member.MemberId);
+
+                if (result2.Success)
+                {
+                    var memberConsiderations = result2.Data;
+
+                    foreach (var consideration in memberConsiderations!)
+                    {
+                        switch (consideration.Type)
+                        {
+                            case Restriction:
+                                restrictions.Add(consideration.Value);
+                                break;
+                            case Goal:
+                                goals.Add(consideration.Value);
+                                break;
+                            case Cuisine:
+                                cuisines.Add(consideration.Value);
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+                var memberConsiderationsText = $"Name: {member.Name}\nNotes: {member.Notes}\nRestrictions: {string.Join(", ", restrictions)}\nGoals: {string.Join(", ", goals)}\nFavorite Cuisines: {string.Join(", ", cuisines)}\n\n";
+                considerationsText.Append(memberConsiderationsText);
+            }
+            
+            return considerationsText.ToString();
         }
         else
         {
-            numberOfMeals = $"{mealCounts[0]}, {mealCounts[1]}, and {mealCounts[2]}";
+            throw new NotImplementedException();
         }
-
-        var gordonConsiderations = $"Create {numberOfMeals} recipes. Here is a list of dietary considerations. The list follow the pattern of considerationType = considerationValue.\n";
-        var considerations = _considerationService.GetAllFamilyConsiderations(familyId).Data;
-
-        if (considerations == null)
-        {
-            return null;
-        }
-
-        // loop through considerations and add them to the message for gordon
-        stringBuiler.Append(gordonConsiderations);
-        foreach (var consideration in considerations)
-        {
-            stringBuiler.Append($"Type: {consideration.Type} = Value: {consideration.Value}\n");
-        }
-
-        return stringBuiler.ToString();
     }
 
     private static string? BuildEmail(GordonResponseModel response)
