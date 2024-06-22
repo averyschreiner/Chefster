@@ -71,6 +71,8 @@ public class JobService(
         var gordonResponse = await _gordonService.GetMessageResponse(gordonPrompt);
         var body = await _viewToStringService.ViewToStringAsync("EmailTemplate", gordonResponse.Data!);
 
+        Console.WriteLine("\n\nHtml:\n" + body);
+
         if (family != null && body != null)
         {
             _emailService.SendEmail(
