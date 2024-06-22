@@ -87,4 +87,70 @@ public class IndexController(FamilyService familyService) : Controller
     {
         return View();
     }
+
+    [Route("/email")]
+    public IActionResult EmailTemplate()
+    {
+        var model = new GordonResponseModel
+        {
+            Notes = "Here are the notes regarding the recipes for this week",
+            BreakfastRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                }
+            ],
+            LunchRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                }
+
+            ],
+            DinnerRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["1. Scramble the eggs", "2. Put eggs in the pan to cook", "3. Fry bacon in the pan of 6 minutes, flip halfway through", "4. Slice up banana"]
+                }
+            ],
+            GroceryList = ["almond milk", "chia seeds", "maple syrup", "banana", "rolled oats", "blueberries", "spinach", "avocado", "tomato", "corn tortillas", "black beans", "cilantro", "lime", "green onions", "quinoa", "cucumber", "red bell pepper", "olive oil", "chicken breast", "soy sauce", "ginger", "garlic", "honey", "salmon fillet", "broccolini", "asparagus", "lemon", "spaghetti squash", "marinara sauce", "vegan mozzarella", "bell peppers", "onion", "cherry tomatoes", "zucchini", "mushrooms", "taco seasoning", "ground beef", "cheddar cheese", "gluten-free hamburger buns", "lettuce", "pickles", "barbecue sauce", "ribeye steak", "rosemary", "sweet potatoes", "green beans"]
+        };
+        return View(model);
+    }
 }

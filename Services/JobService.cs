@@ -1,7 +1,6 @@
 using System.Text;
 using Chefster.Models;
 using Hangfire;
-using MongoDB.Driver;
 using static Chefster.Common.ConsiderationsEnum;
 
 namespace Chefster.Services;
@@ -11,7 +10,8 @@ public class JobService(
     EmailService emailService,
     FamilyService familyService,
     GordonService gordonService,
-    MemberService memberService
+    MemberService memberService,
+    ViewToStringService viewToStringService
 )
 {
     private readonly ConsiderationsService _considerationService = considerationsService;
@@ -19,6 +19,7 @@ public class JobService(
     private readonly FamilyService _familyService = familyService;
     private readonly GordonService _gordonService = gordonService;
     private readonly MemberService _memberService = memberService;
+    private readonly ViewToStringService _viewToStringService = viewToStringService;
 
     /*
     The service is responsible for created and updating jobs that will
@@ -64,11 +65,11 @@ public class JobService(
 
     public async Task GatherAndSendEmail(string familyId)
     {
-        // grab family, get gordon response, build email
+        // grab family, get gordon's prompt, create the email, then send it
         var family = _familyService.GetById(familyId).Data;
-        var builtRequest = BuildGordonPrompt(family!)!;
-        var gordonResponse = await _gordonService.GetMessageResponse(builtRequest);
-        var body = BuildEmail(gordonResponse.Data!);
+        var gordonPrompt = BuildGordonPrompt(family!)!;
+        var gordonResponse = await _gordonService.GetMessageResponse(gordonPrompt);
+        var body = await _viewToStringService.ViewToStringAsync("EmailTemplate", gordonResponse.Data!);
 
         if (family != null && body != null)
         {
@@ -86,7 +87,7 @@ public class JobService(
         string allConsiderations = GetConsiderationsText(family.Id);
         // TODO: get previous meals
         string gordonPrompt = $"Create {mealCounts} recipes. Here is a list of the dietary considerations:\n{allConsiderations}";
-
+        Console.WriteLine("Gordon's Prompt:\n" + gordonPrompt);
         return gordonPrompt.ToString();
     }
 
@@ -178,213 +179,5 @@ public class JobService(
         {
             throw new NotImplementedException();
         }
-    }
-
-    private static string? BuildEmail(GordonResponseModel response)
-    {
-        var final = "";
-        var allIngredients = new List<string> { };
-        var notes = "";
-        var name = "";
-        var ingredients = new List<string> { };
-        var instructions = new List<string> { };
-        var prepareTime = "";
-        var servings = 0;
-
-        var recipes = response.Response;
-        if (recipes.Count == 0 || recipes == null)
-        {
-            return null;
-        }
-
-        foreach (var recipe in recipes)
-        {
-            allIngredients = recipe!.AllIngredients;
-            notes = recipe!.Notes;
-            foreach (var detailRecipe in recipe.Recipes)
-            {
-                name = detailRecipe.DishName;
-                ingredients = detailRecipe.Ingredients;
-                instructions = detailRecipe.Instructions;
-                prepareTime = detailRecipe.PrepareTime;
-                servings = detailRecipe.Servings;
-
-                var formatted =
-                    $@"
-<!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f9f9f9;
-            color: #333;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }}
-        summary {{
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }}
-        details {{
-            margin-bottom: 20px;
-        }}
-        h1 {{
-            color: #333;
-        }}
-        h2 {{
-            color: #666;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-        }}
-        ul {{
-            list-style-type: disc;
-            margin-left: 20px;
-        }}
-        li {{
-            margin-bottom: 5px;
-        }}
-        .notes {{
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #e7f3fe;
-            border-left: 5px solid #2196F3;
-        }}
-        .thickLine {{
-            border: none;
-            height: 5px;
-            background-color: #000;
-            margin: 20px 0;
-        }}
-    </style>
-</head>
-<body>
-    <div class=""container"">
-            <h2>Dish Name: {name}</h2>
-            <p><strong>Prepare Time:</strong> {prepareTime}</p>
-            <p><strong>Serves:</strong> {servings}</p>
-
-            <div class=""notes"">
-                <h2>Dish Notes:</h2>
-                <p>{notes}</p>
-            </div>
-
-            <h2>Detailed Ingredients:</h2>
-            <ul>
-                {string.Join("", ingredients.Select(ingredient => $"<li>{ingredient}</li>"))}
-            </ul>
-
-            <h2>Preparation Instructions:</h2>
-            <ol>
-                {string.Join("", instructions.Select(instruction => $"<li>{instruction}</li>"))}
-            </ol>
-            <hr class=""thickLine"">
-    </div>
-</body>
-</html>
-";
-                final += formatted;
-            }
-        }
-        var header =
-            $@"
-                <!DOCTYPE html>
-<html lang=""en"">
-<head>
-    <meta charset=""UTF-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f9f9f9;
-            color: #333;
-            padding: 20px;
-        }}
-        .container {{
-            max-width: 600px;
-            margin: auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }}
-        h1 {{
-            color: #333;
-        }}
-        h2 {{
-            color: #666;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-        }}
-        ul {{
-            list-style-type: disc;
-            margin-left: 20px;
-        }}
-        li {{
-            margin-bottom: 5px;
-            font-size: 14px; 
-        }}
-        .thickLine {{
-            border: none;
-            height: 5px;
-            background-color: #000;
-            margin: 20px 0;
-        }}
-        .content {{
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-        }}
-        td {{
-            padding: 5px;
-            vertical-align: top;
-        }}
-    </style>
-</head>
-<body>
-    <div class=""container"">
-        <h1>Here are your meals for the week! Chef's Kiss ;)</h1>
-        <h2>Your Grocery List:</h2>
-        <div class=""content"">
-            <table>
-                <tr>
-                    <td>
-                        <ul>
-                            {string.Join("", allIngredients.Take(allIngredients.Count / 2 + 1).Select(ingredient => $"<li>{ingredient}</li>"))}
-                        </ul>
-                    </td>
-                    <td>
-                        <ul>
-                            {string.Join("", allIngredients.Skip(allIngredients.Count / 2 + 1).Select(ingredient => $"<li>{ingredient}</li>"))}
-                        </ul>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <hr class=""thickLine"">
-    </div>
-</body>
-</html>
-";
-        return header + final;
     }
 }
