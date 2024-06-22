@@ -39,6 +39,7 @@ var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");
 builder.Services.AddDbContext<ChefsterDbContext>(options =>
 {
     options.UseSqlServer(connString);
+   // options.UseInMemoryDatabase("TestDB");
 });
 
 //GlobalConfiguration.Configuration.UseSqlServerStorage("connection String");
@@ -67,15 +68,19 @@ builder.Services.AddHangfire(
     (sp, configuration) =>
     {
         configuration
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        // .UseSqlServerStorage(connString);
-        .UseMongoStorage(
-            mongoClient,
-            "chefster-hangfire",
-            new MongoStorageOptions { MigrationOptions = migrationOptions, CheckConnection = false }
-        );
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            // .UseSqlServerStorage(connString);
+            .UseMongoStorage(
+                mongoClient,
+                "chefster-hangfire",
+                new MongoStorageOptions
+                {
+                    MigrationOptions = migrationOptions,
+                    CheckConnection = false
+                }
+            );
     }
 );
 
