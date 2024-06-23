@@ -11,6 +11,7 @@ public class JobService(
     FamilyService familyService,
     GordonService gordonService,
     MemberService memberService,
+    PreviousRecipesService previousRecipesService,
     ViewToStringService viewToStringService
 )
 {
@@ -19,6 +20,7 @@ public class JobService(
     private readonly FamilyService _familyService = familyService;
     private readonly GordonService _gordonService = gordonService;
     private readonly MemberService _memberService = memberService;
+    private readonly PreviousRecipesService _previousRecipeService = previousRecipesService;
     private readonly ViewToStringService _viewToStringService = viewToStringService;
 
     /*
@@ -81,14 +83,18 @@ public class JobService(
                 body
             );
         }
+
+        var dishNames = ExtractDishNames(gordonResponse.Data!);
+        _previousRecipeService.HoldRecipes(familyId, dishNames);
+        _previousRecipeService.RealeaseRecipes(familyId);
     }
 
     public string BuildGordonPrompt(FamilyModel family)
     {
         string mealCounts = GetMealCountsText(family.NumberOfBreakfastMeals, family.NumberOfLunchMeals, family.NumberOfDinnerMeals);
         string allConsiderations = GetConsiderationsText(family.Id);
-        // TODO: get previous meals
-        string gordonPrompt = $"Create {mealCounts} recipes. Here is a list of the dietary considerations:\n{allConsiderations}";
+        List<string> previousRecipes = _previousRecipeService.GetPreviousRecipes(family.Id).Data!;
+        string gordonPrompt = $"Create {mealCounts} recipes, each being {family.FamilySize} servings. Here is a list of the dietary considerations:\n{allConsiderations}DO NOT create any of the following recipes: {string.Join(", ", previousRecipes)}";
         Console.WriteLine("Gordon's Prompt:\n" + gordonPrompt);
         return gordonPrompt.ToString();
     }
@@ -181,5 +187,36 @@ public class JobService(
         {
             throw new NotImplementedException();
         }
+    }
+
+    private List<string> ExtractDishNames(GordonResponseModel gordonResponse)
+    {
+        var dishNames = new List<string>();
+
+        if (gordonResponse.BreakfastRecipes != null)
+        {
+            foreach (var recipe in gordonResponse.BreakfastRecipes)
+            {
+                dishNames.Add(recipe.DishName);
+            }
+        }
+
+        if (gordonResponse.LunchRecipes != null)
+        {
+            foreach (var recipe in gordonResponse.LunchRecipes)
+            {
+                dishNames.Add(recipe.DishName);
+            }
+        }
+
+        if (gordonResponse.DinnerRecipes != null)
+        {
+            foreach (var recipe in gordonResponse.DinnerRecipes)
+            {
+                dishNames.Add(recipe.DishName);
+            }
+        }
+
+        return dishNames;
     }
 }

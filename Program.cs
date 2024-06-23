@@ -50,6 +50,7 @@ builder.Services.AddScoped<JobService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<GordonService>();
 builder.Services.AddScoped<ViewToStringService>();
+builder.Services.AddScoped<PreviousRecipesService>();
 builder.Services.AddControllers();
 
 builder.Services.AddControllersWithViews();
