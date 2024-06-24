@@ -136,7 +136,9 @@ public class FamilyController(
             }
         }
 
-        return RedirectToAction("Index", "Chat");
+        // TODO: send confirmation email
+
+        return RedirectToAction("ThankYou", "Index");
     }
 
     [HttpDelete("{Id}")]

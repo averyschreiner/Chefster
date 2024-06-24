@@ -62,32 +62,6 @@ public class IndexController(FamilyService familyService) : Controller
         }
     }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(
-            new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
-        );
-    }
-
-    public IActionResult Index()
-    {
-        return View();
-    }
-
-    [Route("/privacy")]
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [Authorize]
-    [Route("/profile")]
-    public IActionResult Profile()
-    {
-        return View();
-    }
-
     [Route("/email")]
     public IActionResult EmailTemplate()
     {
@@ -152,5 +126,38 @@ public class IndexController(FamilyService familyService) : Controller
             GroceryList = ["almond milk", "chia seeds", "maple syrup", "banana", "rolled oats", "blueberries", "spinach", "avocado", "tomato", "corn tortillas", "black beans", "cilantro", "lime", "green onions", "quinoa", "cucumber", "red bell pepper", "olive oil", "chicken breast", "soy sauce", "ginger", "garlic", "honey", "salmon fillet", "broccolini", "asparagus", "lemon", "spaghetti squash", "marinara sauce", "vegan mozzarella", "bell peppers", "onion", "cherry tomatoes", "zucchini", "mushrooms", "taco seasoning", "ground beef", "cheddar cheese", "gluten-free hamburger buns", "lettuce", "pickles", "barbecue sauce", "ribeye steak", "rosemary", "sweet potatoes", "green beans"]
         };
         return View(model);
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        return View(
+            new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier }
+        );
+    }
+
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    [Route("/privacy")]
+    public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    [Authorize]
+    [Route("/profile")]
+    public IActionResult Profile()
+    {
+        return View();
+    }
+
+    [Authorize]
+    [Route("/thankyou")]
+    public IActionResult ThankYou()
+    {
+        return View();
     }
 }
