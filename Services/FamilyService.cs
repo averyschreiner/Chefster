@@ -114,6 +114,10 @@ public class FamilyService(ChefsterDbContext context) : IFamily
             existingFam.FamilySize = family.FamilySize;
             existingFam.GenerationDay = family.GenerationDay;
             existingFam.GenerationTime = family.GenerationTime;
+            existingFam.NumberOfBreakfastMeals = family.NumberOfBreakfastMeals;
+            existingFam.NumberOfLunchMeals = family.NumberOfLunchMeals;
+            existingFam.NumberOfDinnerMeals = family.NumberOfDinnerMeals;
+            existingFam.TimeZone = family.TimeZone;
 
             // we've edited the item in context, now just save it
             _context.SaveChanges();

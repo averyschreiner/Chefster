@@ -6,16 +6,24 @@ using Chefster.Services;
 using Chefster.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace Chefster.Controllers;
 
 // use this to make swagger ignore this controller if its not really an api
 [ApiExplorerSettings(IgnoreApi = true)]
-public class IndexController(FamilyService familyService, MemberService memberService) : Controller
+public class IndexController(
+    FamilyService familyService,
+    MemberService memberService,
+    ConsiderationsService considerationsService
+) : Controller
 {
     private readonly FamilyService _familyService = familyService;
     private readonly MemberService _memberService = memberService;
+    private readonly ConsiderationsService _considerationService = considerationsService;
 
     [Authorize]
     [Route("/chat")]
@@ -69,58 +77,135 @@ public class IndexController(FamilyService familyService, MemberService memberSe
     [Route("/updateprofile")]
     public IActionResult UpdateProfile()
     {
-        var model = new FamilyViewModel
-        {
-            PhoneNumber = "",
-            FamilySize = 1,
-            GenerationDay = DayOfWeek.Sunday,
-            GenerationTime = TimeSpan.Zero,
-            TimeZone = "",
-            Members = new List<MemberViewModel>
-            {
-                new()
-                {
-                    Name = "",
-                    Restrictions = ConsiderationsLists.RestrictionsList,
-                    Goals = ConsiderationsLists.GoalsList,
-                    Cuisines = ConsiderationsLists.CuisinesList
-                }
-            }
-        };
+        // var model = new FamilyViewModel
+        // {
+        //     PhoneNumber = "",
+        //     FamilySize = 1,
+        //     GenerationDay = DayOfWeek.Sunday,
+        //     GenerationTime = TimeSpan.Zero,
+        //     TimeZone = "",
+        //     Members = new List<MemberViewModel>
+        //     {
+        //         new()
+        //         {
+        //             Name = "",
+        //             Restrictions = ConsiderationsLists.RestrictionsList,
+        //             Goals = ConsiderationsLists.GoalsList,
+        //             Cuisines = ConsiderationsLists.CuisinesList
+        //         }
+        //     },
+        //     NumberOfBreakfastMeals = 0,
+        //     NumberOfLunchMeals = 0,
+        //     NumberOfDinnerMeals = 0,
+        // };
 
         var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
         var family = _familyService.GetById(id!).Data;
-
-        var viewModelMembers = new List<MemberViewModel>();
+        var viewModelMembers = new List<MemberUpdateViewModel>();
 
         if (family != null)
         {
             var members = _memberService.GetByFamilyId(family.Id).Data;
 
-            // if (members != null)
-            // {
-            // foreach (var mem in members)
-            // {
-            //     var tooAdd = new MemberViewModel
-            //     {
-            //         Name = mem.Name,
-            //         Restrictions = mem.
-            //     }
-            //     viewModelMembers.Add(mem)
-            // }
-            // }
-
-
-            var populatedModel = new FamilyViewModel
+            var count = 0;
+            foreach (var member in members!)
             {
+                var considerations = _considerationService.GetMemberConsiderations(member.MemberId).Data;
+                var goalSelectListsItems = new List<SelectListItem>();
+                goalSelectListsItems.AddRange(ConsiderationsLists.GoalsList);
+                var restrictionsSelectListsItems = new List<SelectListItem>();
+                restrictionsSelectListsItems.AddRange(ConsiderationsLists.RestrictionsList);
+                var cuisineSelectListsItems = new List<SelectListItem>();
+                cuisineSelectListsItems.AddRange(ConsiderationsLists.CuisinesList);
+
+                if (considerations != null && considerations.Count > 0)
+                {
+                    foreach (var consideration in considerations)
+                    {
+                        Console.WriteLine(consideration);
+                        if (consideration.Type == ConsiderationsEnum.Cuisine)
+                        {
+                            foreach (var item in ConsiderationsLists.CuisinesList)
+                            {
+                                if (item.Text == consideration.Value)
+                                {
+                                    cuisineSelectListsItems[count] = new SelectListItem
+                                    {
+                                        Selected = true,
+                                        Text = consideration.Value
+                                    };
+                                }
+                                count += 1;
+                            }
+                            count = 0;
+                        }
+
+                        if (consideration.Type == ConsiderationsEnum.Goal)
+                        {
+                            foreach (var item in ConsiderationsLists.GoalsList)
+                            {
+                                if (item.Text == consideration.Value)
+                                {
+                                    goalSelectListsItems[count] = new SelectListItem
+                                    {
+                                        Selected = true,
+                                        Text = consideration.Value
+                                    };
+                                }
+                                count += 1;
+                            }
+                            count = 0;
+                        }
+
+                        if (consideration.Type == ConsiderationsEnum.Restriction)
+                        {
+                            foreach (var item in ConsiderationsLists.RestrictionsList)
+                            {
+                                if (item.Text == consideration.Value)
+                                {
+                                    restrictionsSelectListsItems[count] = new SelectListItem
+                                    {
+                                        Selected = true,
+                                        Text = consideration.Value
+                                    };
+                                }
+                                count += 1;
+                            }
+                            count = 0;
+                        }
+                    }
+                    var tooAdd = new MemberUpdateViewModel
+                    {
+                        MemberId = member.MemberId,
+                        Name = member.Name,
+                        Notes = member.Notes,
+                        Restrictions = restrictionsSelectListsItems,
+                        Goals = goalSelectListsItems,
+                        Cuisines = cuisineSelectListsItems
+                    };
+
+                    // var st = JsonConvert.SerializeObject(tooAdd);
+                    // Console.WriteLine(st);
+
+                    viewModelMembers.Add(tooAdd);
+                }
+            }
+
+            var populatedModel = new FamilyUpdateViewModel
+            {
+                Id = family.Id,
                 PhoneNumber = family.PhoneNumber,
                 FamilySize = family.FamilySize,
                 GenerationDay = family.GenerationDay,
                 GenerationTime = family.GenerationTime,
                 TimeZone = family.TimeZone,
-                Members = viewModelMembers // currently empty, gotta figure that out
+                Members = viewModelMembers, // currently empty, gotta figure that out
+                NumberOfBreakfastMeals = family.NumberOfBreakfastMeals,
+                NumberOfLunchMeals = family.NumberOfLunchMeals,
+                NumberOfDinnerMeals = family.NumberOfDinnerMeals
             };
+            var jsonString = JsonConvert.SerializeObject(populatedModel);
+            Console.WriteLine($"******************** {jsonString}");
             return View(populatedModel);
         }
         else

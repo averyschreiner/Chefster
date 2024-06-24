@@ -45,7 +45,7 @@ public class FamilyController(
     }
 
     [HttpPost]
-    public IActionResult CreateFamily([FromForm] FamilyViewModel Family)
+    public async Task<ActionResult> CreateFamily([FromForm] FamilyViewModel Family)
     {
         // create the new family
         var NewFamily = new FamilyModel
@@ -71,6 +71,79 @@ public class FamilyController(
             _jobService.CreateorUpdateEmailJob(created.Data!.Id);
         }
 
+        // create all members and considerations for family
+        await CreateMembersAndConsiderations(Family);
+
+        return RedirectToAction("Index", "Chat");
+    }
+
+    [HttpDelete("{Id}")]
+    public ActionResult DeleteFamily(string Id)
+    {
+        var deleted = _familyService.DeleteFamily(Id);
+
+        if (!deleted.Success)
+        {
+            return BadRequest($"Error: {deleted.Error}");
+        }
+
+        return Ok();
+    }
+
+    [HttpPut("{Id}")]
+    public ActionResult<FamilyModel> UpdateFamily(string Id, [FromBody] FamilyUpdateDto family)
+    {
+        var updated = _familyService.UpdateFamily(Id, family);
+
+        if (!updated.Success)
+        {
+            return BadRequest($"Error: {updated.Error}");
+        }
+
+        // once we updated successfully, not now update the job with new generation times
+        _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
+
+        return Ok(updated.Data);
+    }
+
+    // this function is specificly for updating through a form since forms only support POST and PUT
+    [HttpPost("/api/update/family")]
+    public async Task<ActionResult<FamilyModel>> PostUpdateFamily(
+        [FromBody] FamilyUpdateViewModel family
+    )
+    {
+        var updatedFamily = new FamilyUpdateDto
+        {
+            PhoneNumber = family.PhoneNumber,
+            FamilySize = family.FamilySize,
+            NumberOfBreakfastMeals = family.NumberOfBreakfastMeals,
+            NumberOfLunchMeals = family.NumberOfLunchMeals,
+            NumberOfDinnerMeals = family.NumberOfDinnerMeals,
+            GenerationDay = family.GenerationDay,
+            GenerationTime = family.GenerationTime,
+            TimeZone = family.TimeZone,
+        };
+
+        var updated = _familyService.UpdateFamily(family.Id, updatedFamily);
+
+        Console.WriteLine("WE SHOULD HAVE UPDATED");
+
+        if (!updated.Success)
+        {
+            return BadRequest($"Error: {updated.Error}");
+        }
+
+        // once we updated successfully, not now update the job with new generation times
+        _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
+
+        // Update old members and create new considerations
+        await UpdateMembersAndCreateConsiderations(family);
+
+        return Ok(updated.Data);
+    }
+
+    private Task CreateMembersAndConsiderations(FamilyViewModel Family)
+    {
         foreach (MemberViewModel Member in Family.Members)
         {
             // create the new member
@@ -135,36 +208,73 @@ public class FamilyController(
                 }
             }
         }
-
-        return RedirectToAction("Index", "Chat");
+        return Task.CompletedTask;
     }
 
-    [HttpDelete("{Id}")]
-    public ActionResult DeleteFamily(string Id)
+    private Task UpdateMembersAndCreateConsiderations(FamilyUpdateViewModel Family)
     {
-        var deleted = _familyService.DeleteFamily(Id);
-
-        if (!deleted.Success)
+        foreach (MemberUpdateViewModel Member in Family.Members)
         {
-            return BadRequest($"Error: {deleted.Error}");
+            // create the new member
+            var NewMember = new MemberUpdateDto { Name = Member.Name, Notes = Member.Notes };
+
+            // update the member based on its member ID
+            MemberModel UpdatedMember = _memberService
+                .UpdateMember(Member.MemberId, NewMember)
+                .Data!;
+
+            // and their considerations
+            foreach (SelectListItem r in Member.Restrictions)
+            {
+                if (r.Selected)
+                {
+                    // create a new consideration
+                    ConsiderationsCreateDto restriction =
+                        new()
+                        {
+                            MemberId = Member.MemberId,
+                            Type = ConsiderationsEnum.Restriction,
+                            Value = r.Text
+                        };
+
+                    // create all new ones
+                    _considerationsService.CreateConsideration(restriction);
+                }
+            }
+
+            foreach (SelectListItem g in Member.Goals)
+            {
+                if (g.Selected)
+                {
+                    ConsiderationsCreateDto goal =
+                        new()
+                        {
+                            MemberId = Member.MemberId,
+                            Type = ConsiderationsEnum.Goal,
+                            Value = g.Text
+                        };
+
+                    _considerationsService.CreateConsideration(goal);
+                }
+            }
+
+            foreach (SelectListItem c in Member.Cuisines)
+            {
+                if (c.Selected)
+                {
+                    ConsiderationsCreateDto cuisine =
+                        new()
+                        {
+                            MemberId = Member.MemberId,
+                            Type = ConsiderationsEnum.Cuisine,
+                            Value = c.Text
+                        };
+
+                    _considerationsService.CreateConsideration(cuisine);
+                }
+            }
         }
 
-        return Ok();
-    }
-
-    [HttpPut("{Id}")]
-    public ActionResult<FamilyModel> UpdateFamily(string Id, [FromBody] FamilyUpdateDto family)
-    {
-        var updated = _familyService.UpdateFamily(Id, family);
-
-        if (!updated.Success)
-        {
-            return BadRequest($"Error: {updated.Error}");
-        }
-
-        // once we updated successfully, not now update the job with new generation times
-        _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
-
-        return Ok(updated.Data);
+        return Task.CompletedTask;
     }
 }
