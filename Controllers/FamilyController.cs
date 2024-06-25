@@ -137,8 +137,14 @@ public class FamilyController(
         }
 
         // TODO: send confirmation email
+        var model = new ThankYouViewModel
+        {
+            EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
+            GenerationDay = Family.GenerationDay,
+            GenerationTime = Family.GenerationTime
+        };
 
-        return RedirectToAction("ThankYou", "Index");
+        return RedirectToAction("ThankYou", "Index", model);
     }
 
     [HttpDelete("{Id}")]

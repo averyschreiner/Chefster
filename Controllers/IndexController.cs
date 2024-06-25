@@ -156,8 +156,16 @@ public class IndexController(FamilyService familyService) : Controller
 
     [Authorize]
     [Route("/thankyou")]
-    public IActionResult ThankYou()
+    public IActionResult ThankYou(ThankYouViewModel model)
     {
-        return View();
+        var model1 = new ThankYouViewModel
+        {
+            EmailAddress = "schreineravery@gmail.com",
+            GenerationDay = DayOfWeek.Tuesday,
+            GenerationTime = new TimeSpan(17, 0, 0)
+        };
+
+        // return View(model);
+        return View(model1);
     }
 }

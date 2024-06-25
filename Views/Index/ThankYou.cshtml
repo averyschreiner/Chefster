@@ -1,5 +1,17 @@
 @{
     ViewData["Title"] = "Thank You";
+    
+    var hour = Model.GenerationTime.Hours % 12;
+    if (hour == 0)
+    {
+        hour = 12;
+    }
+    var amPm = Model.GenerationTime.Hours < 12 ? "AM" : "PM";
+    var time = $"{hour}:{Model.GenerationTime.Minutes:D2} {amPm}";
 }
 
-<h2>Thank</h2>
+@model Chefster.ViewModels.ThankYouViewModel
+
+<div class="d-flex justify-content-center align-items-center vh-100 fs-3 w-50" style="margin-top: -10vh;">
+    Thank you for signing up for our service. "@Model.EmailAddress" will receive weekly recipes at the following time: @Model.GenerationDay, @time
+</div>  
