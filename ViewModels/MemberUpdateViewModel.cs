@@ -10,5 +10,4 @@ public class MemberUpdateViewModel
     public required List<SelectListItem> Restrictions { get; set; }
     public required List<SelectListItem> Goals { get; set; }
     public required List<SelectListItem> Cuisines { get; set; }
-    public int Index { get; set; }
 }

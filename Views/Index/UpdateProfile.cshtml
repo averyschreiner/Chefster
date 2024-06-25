@@ -123,12 +123,20 @@
 
             const members = @Html.Raw(Json.Serialize(Model.Members))
 
-                                        for (let i = 0; i < familySizeSelected; i++) {
+            for (let i = 0; i < familySizeSelected; i++) {
+
+                console.log(members);
 
                 const name = members[i] ? members[i]["name"] : "";
                 const note = members[i] ? members[i]["notes"] : "";
+                const id = members[i] ? members[i]["memberId"] : "NOT_CREATED";
                 const memb = members[i] ? members[i] : null;
 
+                let hiddenId = document.createElement('input');
+                hiddenId.type = "hidden"
+                hiddenId.name = `Members[${i}].MemberId`
+                hiddenId.value = id
+                console.log(id)
                 // Create main container div
                 const memberDiv = document.createElement('div');
                 memberDiv.id = "member" + (i + 1);
@@ -177,6 +185,7 @@
                 inputwrapper.appendChild(nameInput);
 
                 // Append labels and inputs to rowDiv
+                rowDiv.appendChild(hiddenId);
                 rowDiv.appendChild(nameLabel);
                 rowDiv.appendChild(inputwrapper);
                 rowDiv.appendChild(notesLabel);
@@ -188,17 +197,11 @@
 
                 renderConsiderationsColumn(i, memberDiv, members[i]);
 
-                // Continue building the rest of your structure similarly...
-                // (for checkboxes and other form elements)
-
                 // Append memberDiv to the main container
                 familyMembersContainer.appendChild(memberDiv);
-
-
-                // Trigger the input event to initialize the form fields on page load
-                //familySizeInput.dispatchEvent(new Event('input'));
             }
         }
+
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }

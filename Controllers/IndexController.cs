@@ -199,7 +199,7 @@ public class IndexController(
                 GenerationDay = family.GenerationDay,
                 GenerationTime = family.GenerationTime,
                 TimeZone = family.TimeZone,
-                Members = viewModelMembers, // currently empty, gotta figure that out
+                Members = viewModelMembers,
                 NumberOfBreakfastMeals = family.NumberOfBreakfastMeals,
                 NumberOfLunchMeals = family.NumberOfLunchMeals,
                 NumberOfDinnerMeals = family.NumberOfDinnerMeals
