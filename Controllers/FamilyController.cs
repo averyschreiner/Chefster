@@ -14,15 +14,19 @@ namespace Chefster.Controllers;
 [ApiController]
 public class FamilyController(
     ConsiderationsService considerationsService,
+    EmailService emailService,
     FamilyService familyService,
     MemberService memberService,
-    JobService jobService
+    JobService jobService,
+    ViewToStringService viewToStringService
 ) : ControllerBase
 {
     private readonly ConsiderationsService _considerationsService = considerationsService;
+    private readonly EmailService _emailService = emailService;
     private readonly FamilyService _familyService = familyService;
     private readonly MemberService _memberService = memberService;
     private readonly JobService _jobService = jobService;
+    private readonly ViewToStringService _viewToStringService = viewToStringService;
 
     [HttpGet("{Id}")]
     public ActionResult<FamilyModel> GetFamily(string Id)
@@ -45,7 +49,7 @@ public class FamilyController(
     }
 
     [HttpPost]
-    public IActionResult CreateFamily([FromForm] FamilyViewModel Family)
+    public async Task<IActionResult> CreateFamily([FromForm] FamilyViewModel Family)
     {
         // create the new family
         var NewFamily = new FamilyModel
@@ -137,6 +141,9 @@ public class FamilyController(
         }
 
         // TODO: send confirmation email
+        var body = await _viewToStringService.ViewToStringAsync("ConfirmationEmail", new { FamilyId = NewFamily.Id });
+        _emailService.SendEmail(NewFamily.Email, "Thanks for signing up for Chefster!", body);
+        
         var model = new ThankYouViewModel
         {
             EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,

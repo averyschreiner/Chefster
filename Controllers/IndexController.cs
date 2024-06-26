@@ -22,6 +22,12 @@ public class IndexController(FamilyService familyService) : Controller
         return View();
     }
 
+    [Route("/confirm")]
+    public IActionResult ConfirmationEmail()
+    {
+        return View(new { FamilyId = "exampleFamilyId" });
+    }
+
     [Authorize]
     [HttpGet]
     [Route("/createprofile")]
@@ -159,5 +165,13 @@ public class IndexController(FamilyService familyService) : Controller
     public IActionResult ThankYou(ThankYouViewModel model)
     {
         return View(model);
+    }
+
+    [Route("/unsubscribe/{familyId}")]
+    public void Unsubscribe(string familyId)
+    {
+        Console.WriteLine("Unsubscribing family " + familyId);
+        // TODO: implement deletion of the family, all the members, all the member considerations, and all the previous recipes for the family
+        // TODO: redirect to a "You have unsubscribed" page
     }
 }
