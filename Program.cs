@@ -39,7 +39,10 @@ var connString = Environment.GetEnvironmentVariable("SQL_CONN_STR");
 builder.Services.AddDbContext<ChefsterDbContext>(options =>
 {
     options.UseSqlServer(connString);
-   // options.UseInMemoryDatabase("TestDB");
+    options.UseLoggerFactory(
+        LoggerFactory.Create(builder => builder.AddFilter((category, level) => false))
+    );
+    // options.UseInMemoryDatabase("TestDB");
 });
 
 //GlobalConfiguration.Configuration.UseSqlServerStorage("connection String");
