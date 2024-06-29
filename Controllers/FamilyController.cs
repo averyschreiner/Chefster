@@ -4,8 +4,11 @@ using Chefster.Models;
 using Chefster.Services;
 using Chefster.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson;
 
 namespace Chefster.Controllers;
 
@@ -47,11 +50,17 @@ public class FamilyController(
     [HttpPost]
     public async Task<ActionResult> CreateFamily([FromForm] FamilyViewModel Family)
     {
+        var familyId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+
+        if (familyId == null)
+        {
+            return BadRequest("FamilyId was null when creating family");
+        }
         // create the new family
         var NewFamily = new FamilyModel
         {
             // these shouldn't  be null so we added a "!"
-            Id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!,
+            Id = familyId,
             Email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
             CreatedAt = DateTime.UtcNow,
             PhoneNumber = Family.PhoneNumber,
@@ -109,9 +118,16 @@ public class FamilyController(
     // this function is specificly for updating through a form since forms only support POST and PUT
     [HttpPost("/api/update/family")]
     public async Task<ActionResult<FamilyModel>> PostUpdateFamily(
-        [FromBody] FamilyUpdateViewModel family
+        [FromForm] FamilyUpdateViewModel family
     )
     {
+        var familyId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        if (familyId == null)
+        {
+            return Unauthorized("No Authorized User. Denied");
+        }
+
         var updatedFamily = new FamilyUpdateDto
         {
             PhoneNumber = family.PhoneNumber,
@@ -124,7 +140,7 @@ public class FamilyController(
             TimeZone = family.TimeZone,
         };
 
-        var updated = _familyService.UpdateFamily(family.Id, updatedFamily);
+        var updated = _familyService.UpdateFamily(familyId, updatedFamily);
 
         Console.WriteLine("WE SHOULD HAVE UPDATED");
 
@@ -137,9 +153,10 @@ public class FamilyController(
         _jobService.CreateorUpdateEmailJob(updated.Data!.Id);
 
         // Update old members and create new considerations
-        await UpdateMembersAndCreateConsiderations(family);
+        await UpdateOrCreateMembersAndCreateConsiderations(familyId, family);
 
-        return Ok(updated.Data);
+        // may need to redirect them somewhere else
+        return RedirectToAction("Index", "Profile");
     }
 
     private Task CreateMembersAndConsiderations(FamilyViewModel Family)
@@ -211,66 +228,195 @@ public class FamilyController(
         return Task.CompletedTask;
     }
 
-    private Task UpdateMembersAndCreateConsiderations(FamilyUpdateViewModel Family)
+    private Task UpdateOrCreateMembersAndCreateConsiderations(
+        string familyId,
+        FamilyUpdateViewModel Family
+    )
     {
+        var dbMembers = _memberService.GetByFamilyId(familyId).Data;
+
+        // if the member is present in db but not on update payload, delete it
+        // handles the case of changing the family size
+        if (dbMembers != null && dbMembers.Count > Family.Members.Count)
+        {
+            foreach (MemberModel dbm in dbMembers)
+            {
+                if (!Family.Members.Any(newM => newM.MemberId == dbm.MemberId))
+                {
+                    Console.WriteLine($"Deleting Member For Update: {dbm.ToJson()}");
+                    _memberService.DeleteMember(dbm.MemberId);
+
+                    var memConsiderations = _considerationsService.GetMemberConsiderations(
+                        dbm.MemberId
+                    );
+                    if (memConsiderations.Data == null)
+                    {
+                        return Task.FromException(
+                            new Exception(
+                                $"Considerations was not just empty but null. Error: {memConsiderations.Error}"
+                            )
+                        );
+                    }
+                    foreach (ConsiderationsModel con in memConsiderations.Data)
+                    {
+                        _considerationsService.DeleteConsideration(con.ConsiderationId);
+                    }
+                }
+            }
+        }
+
         foreach (MemberUpdateViewModel Member in Family.Members)
         {
-            // create the new member
-            var NewMember = new MemberUpdateDto { Name = Member.Name, Notes = Member.Notes };
+            MemberModel? contextMember = null;
 
-            // update the member based on its member ID
-            MemberModel UpdatedMember = _memberService
-                .UpdateMember(Member.MemberId, NewMember)
-                .Data!;
+            if (Member.ShouldDelete)
+            {
+                if (Member.MemberId != null)
+                {
+                    _memberService.DeleteMember(Member.MemberId);
+                    DeleteOldConsiderations(Member.MemberId);
+                }
+            }
+            else
+            {
+                // if member exists update it
+                if (Member.MemberId != null)
+                {
+                    var UpdatedMember = new MemberUpdateDto
+                    {
+                        Name = Member.Name,
+                        Notes = Member.Notes,
+                    };
 
-            // and their considerations
+                    var updated = _memberService.UpdateMember(Member.MemberId, UpdatedMember);
+                    if (!updated.Success)
+                    {
+                        return Task.FromException(
+                            new Exception(
+                                $"Failed to update member {UpdatedMember.ToJson()}. Error: {updated.Error}"
+                            )
+                        );
+                    }
+                    DeleteOldConsiderations(Member.MemberId);
+                    contextMember = updated.Data!;
+                }
+                else
+                {
+                    // create the new member because the ID was null
+                    var NewMember = new MemberCreateDto
+                    {
+                        FamilyId = familyId,
+                        Name = Member.Name,
+                        Notes = Member.Notes
+                    };
+                    var created = _memberService.CreateMember(NewMember);
+
+                    if (!created.Success)
+                    {
+                        return Task.FromException(
+                            new Exception(
+                                $"Failed to create member. Member: {created.Error}. Error: {created.Error}"
+                            )
+                        );
+                    }
+
+                    contextMember = created.Data!;
+                }
+            }
+
+            // Create all new considerations for update
             foreach (SelectListItem r in Member.Restrictions)
             {
-                if (r.Selected)
+                if (r.Selected && contextMember != null)
                 {
-                    // create a new consideration
                     ConsiderationsCreateDto restriction =
                         new()
                         {
-                            MemberId = Member.MemberId,
+                            MemberId = contextMember.MemberId,
                             Type = ConsiderationsEnum.Restriction,
                             Value = r.Text
                         };
-
-                    // create all new ones
-                    _considerationsService.CreateConsideration(restriction);
+                    var created = _considerationsService.CreateConsideration(restriction);
+                    if (!created.Success)
+                    {
+                        return Task.FromException(
+                            new Exception($"Error creating consideration. Error: {created.Error}")
+                        );
+                    }
                 }
             }
 
             foreach (SelectListItem g in Member.Goals)
             {
-                if (g.Selected)
+                if (g.Selected && contextMember != null)
                 {
                     ConsiderationsCreateDto goal =
                         new()
                         {
-                            MemberId = Member.MemberId,
+                            MemberId = contextMember.MemberId,
                             Type = ConsiderationsEnum.Goal,
                             Value = g.Text
                         };
-
-                    _considerationsService.CreateConsideration(goal);
+                    var created = _considerationsService.CreateConsideration(goal);
+                    if (!created.Success)
+                    {
+                        return Task.FromException(
+                            new Exception($"Error creating consideration. Error: {created.Error}")
+                        );
+                    }
                 }
             }
 
             foreach (SelectListItem c in Member.Cuisines)
             {
-                if (c.Selected)
+                if (c.Selected && contextMember != null)
                 {
                     ConsiderationsCreateDto cuisine =
                         new()
                         {
-                            MemberId = Member.MemberId,
+                            MemberId = contextMember.MemberId,
                             Type = ConsiderationsEnum.Cuisine,
                             Value = c.Text
                         };
+                    var created = _considerationsService.CreateConsideration(cuisine);
+                    if (!created.Success)
+                    {
+                        return Task.FromException(
+                            new Exception($"Error creating consideration. Error: {created.Error}")
+                        );
+                    }
+                }
+            }
+            contextMember = null;
+        }
 
-                    _considerationsService.CreateConsideration(cuisine);
+        return Task.CompletedTask;
+    }
+
+    // Handles the deletion of considerations if a member was to update theirs
+    private Task DeleteOldConsiderations(string memberId)
+    {
+        var considerations = _considerationsService.GetMemberConsiderations(memberId).Data;
+
+        if (considerations != null)
+        {
+            var timeFrame = DateTime.UtcNow.AddSeconds(-10);
+            foreach (var consideration in considerations)
+            {
+                if (consideration.CreatedAt <= timeFrame)
+                {
+                    var deleted = _considerationsService.DeleteConsideration(
+                        consideration.ConsiderationId
+                    );
+
+                    Console.WriteLine($"Deleting this consideration: {deleted.Data.ToJson()}");
+
+                    if (!deleted.Success)
+                    {
+                        return Task.FromException(
+                            new Exception("Failed to delete old consideration")
+                        );
+                    }
                 }
             }
         }

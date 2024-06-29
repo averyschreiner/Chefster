@@ -1,10 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Chefster.ViewModels;
 
 public class FamilyUpdateViewModel
 {
-    public required string Id { get; set; }
     public required string PhoneNumber { get; set; }
     public required int FamilySize { get; set; }
     public required int NumberOfBreakfastMeals { get; set; }

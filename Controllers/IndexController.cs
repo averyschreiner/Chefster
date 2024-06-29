@@ -7,9 +7,7 @@ using Chefster.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MongoDB.Bson.IO;
-using Newtonsoft.Json;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
+using MongoDB.Bson;
 
 namespace Chefster.Controllers;
 
@@ -77,28 +75,6 @@ public class IndexController(
     [Route("/updateprofile")]
     public IActionResult UpdateProfile()
     {
-        // var model = new FamilyViewModel
-        // {
-        //     PhoneNumber = "",
-        //     FamilySize = 1,
-        //     GenerationDay = DayOfWeek.Sunday,
-        //     GenerationTime = TimeSpan.Zero,
-        //     TimeZone = "",
-        //     Members = new List<MemberViewModel>
-        //     {
-        //         new()
-        //         {
-        //             Name = "",
-        //             Restrictions = ConsiderationsLists.RestrictionsList,
-        //             Goals = ConsiderationsLists.GoalsList,
-        //             Cuisines = ConsiderationsLists.CuisinesList
-        //         }
-        //     },
-        //     NumberOfBreakfastMeals = 0,
-        //     NumberOfLunchMeals = 0,
-        //     NumberOfDinnerMeals = 0,
-        // };
-
         var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         var family = _familyService.GetById(id!).Data;
         var viewModelMembers = new List<MemberUpdateViewModel>();
@@ -110,7 +86,9 @@ public class IndexController(
             var count = 0;
             foreach (var member in members!)
             {
-                var considerations = _considerationService.GetMemberConsiderations(member.MemberId).Data;
+                var considerations = _considerationService
+                    .GetMemberConsiderations(member.MemberId)
+                    .Data;
                 var goalSelectListsItems = new List<SelectListItem>();
                 goalSelectListsItems.AddRange(ConsiderationsLists.GoalsList);
                 var restrictionsSelectListsItems = new List<SelectListItem>();
@@ -118,7 +96,7 @@ public class IndexController(
                 var cuisineSelectListsItems = new List<SelectListItem>();
                 cuisineSelectListsItems.AddRange(ConsiderationsLists.CuisinesList);
 
-                if (considerations != null && considerations.Count > 0)
+                if (considerations != null)
                 {
                     foreach (var consideration in considerations)
                     {
@@ -181,7 +159,8 @@ public class IndexController(
                         Notes = member.Notes,
                         Restrictions = restrictionsSelectListsItems,
                         Goals = goalSelectListsItems,
-                        Cuisines = cuisineSelectListsItems
+                        Cuisines = cuisineSelectListsItems,
+                        ShouldDelete = false
                     };
 
                     // var st = JsonConvert.SerializeObject(tooAdd);
@@ -193,9 +172,8 @@ public class IndexController(
 
             var populatedModel = new FamilyUpdateViewModel
             {
-                Id = family.Id,
                 PhoneNumber = family.PhoneNumber,
-                FamilySize = family.FamilySize,
+                FamilySize = viewModelMembers.Count,
                 GenerationDay = family.GenerationDay,
                 GenerationTime = family.GenerationTime,
                 TimeZone = family.TimeZone,
@@ -204,8 +182,6 @@ public class IndexController(
                 NumberOfLunchMeals = family.NumberOfLunchMeals,
                 NumberOfDinnerMeals = family.NumberOfDinnerMeals
             };
-            var jsonString = JsonConvert.SerializeObject(populatedModel);
-            Console.WriteLine($"******************** {jsonString}");
             return View(populatedModel);
         }
         else
