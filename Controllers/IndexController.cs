@@ -22,6 +22,12 @@ public class IndexController(FamilyService familyService) : Controller
         return View();
     }
 
+    [Route("/confirm")]
+    public IActionResult ConfirmationEmail()
+    {
+        return View(new { FamilyId = "exampleFamilyId" });
+    }
+
     [Authorize]
     [HttpGet]
     [Route("/createprofile")]
@@ -36,6 +42,9 @@ public class IndexController(FamilyService familyService) : Controller
             {
                 PhoneNumber = "",
                 FamilySize = 1,
+                NumberOfBreakfastMeals = 0,
+                NumberOfLunchMeals = 0,
+                NumberOfDinnerMeals = 7,
                 GenerationDay = DayOfWeek.Sunday,
                 GenerationTime = TimeSpan.Zero,
                 TimeZone =  "",
@@ -57,6 +66,72 @@ public class IndexController(FamilyService familyService) : Controller
         {
             return View("Profile");
         }
+    }
+
+    [Route("/email")]
+    public IActionResult EmailTemplate()
+    {
+        var model = new GordonResponseModel
+        {
+            Notes = "Here are the notes regarding the recipes for this week",
+            BreakfastRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                }
+            ],
+            LunchRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                }
+
+            ],
+            DinnerRecipes = [
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                },
+                new GordonResponseModel.Recipe
+                {
+                    DishName = "Bacon and Eggs",
+                    PrepareTime = "20 minutes",
+                    Servings = 2,
+                    Ingredients = ["6 eggs", "6 slices of bacon", "salt", "1 banana", "2 tbsp peanut butter"],
+                    Instructions = ["Scramble the eggs", "Put eggs in the pan to cook", "Fry bacon in the pan of 6 minutes, flip halfway through", "Slice up banana"]
+                }
+            ],
+            GroceryList = ["almond milk", "chia seeds", "maple syrup", "banana", "rolled oats", "blueberries", "spinach", "avocado", "tomato", "corn tortillas", "black beans", "cilantro", "lime", "green onions", "quinoa", "cucumber", "red bell pepper", "olive oil", "chicken breast", "soy sauce", "ginger", "garlic", "honey", "salmon fillet", "broccolini", "asparagus", "lemon", "spaghetti squash", "marinara sauce", "vegan mozzarella", "bell peppers", "onion", "cherry tomatoes", "zucchini", "mushrooms", "taco seasoning", "ground beef", "cheddar cheese", "gluten-free hamburger buns", "lettuce", "pickles", "barbecue sauce", "ribeye steak", "rosemary", "sweet potatoes", "green beans"]
+        };
+        return View(model);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -85,19 +160,18 @@ public class IndexController(FamilyService familyService) : Controller
         return View();
     }
 
-    [HttpGet]
-    [Route("/memberform")]
-    public IActionResult MemberForm(int index)
+    [Authorize]
+    [Route("/thankyou")]
+    public IActionResult ThankYou(ThankYouViewModel model)
     {
-        var model = new MemberViewModel
-        {
-            Name = "",
-            Index = index,
-            Restrictions = ConsiderationsLists.RestrictionsList,
-            Goals = ConsiderationsLists.GoalsList,
-            Cuisines = ConsiderationsLists.CuisinesList
-        };
+        return View(model);
+    }
 
-        return PartialView("MemberForm", model);
+    [Route("/unsubscribe/{familyId}")]
+    public void Unsubscribe(string familyId)
+    {
+        Console.WriteLine("Unsubscribing family " + familyId);
+        // TODO: implement deletion of the family, all the members, all the member considerations, and all the previous recipes for the family
+        // TODO: redirect to a "You have unsubscribed" page
     }
 }

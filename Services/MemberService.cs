@@ -28,7 +28,8 @@ public class MemberService(ChefsterDbContext context, FamilyService familyServic
         {
             MemberId = Guid.NewGuid().ToString("N"), // make a random unique id for now
             FamilyId = member.FamilyId,
-            Name = member.Name
+            Name = member.Name,
+            Notes = member.Notes
         };
 
         try
