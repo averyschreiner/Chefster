@@ -54,7 +54,7 @@ public class JobService(
         {
             RecurringJob.AddOrUpdate(
                 family.Id,
-                () => GatherAndSendEmail(familyId),
+                () => GenerateAndSendRecipes(familyId),
                 Cron.Weekly(
                     family.GenerationDay,
                     family.GenerationTime.Hours,
@@ -65,7 +65,7 @@ public class JobService(
         }
     }
 
-    public async Task GatherAndSendEmail(string familyId)
+    public async Task GenerateAndSendRecipes(string familyId)
     {
         // grab family, get gordon's prompt, create the email, then send it
         var family = _familyService.GetById(familyId).Data;

@@ -206,9 +206,11 @@ public class GordonService(IHttpClientFactory httpClientFactory)
 
         var json = JsonConvert.DeserializeObject<JObject>(content);
 
-        var gordonResponse = JsonConvert.DeserializeObject<GordonResponseModel>(json["data"][0]["content"][0]["text"]["value"].ToString());
+        var jsonString = json!["data"]![0]!["content"]![0]!["text"]!["value"]!.ToString();
 
-        Console.WriteLine("Response Content:\n" + json["data"][0]["content"][0]["text"]["value"].ToString());
+        var gordonResponse = JsonConvert.DeserializeObject<GordonResponseModel>(jsonString);
+
+        Console.WriteLine("Response Content:\n" + jsonString);
 
         if (gordonResponse != null)
         {
