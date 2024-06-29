@@ -120,7 +120,8 @@
             const familySizeSelected = parseInt(familySizeInput.value);
 
             const members = @Html.Raw(Json.Serialize(Model.Members))
-                            for (let member = 0; member < familySizeSelected; member++) {
+
+            for (let member = 0; member < familySizeSelected; member++) {
 
                 const name = members[member] ? members[member]["name"] : "";
                 const note = members[member] ? members[member]["notes"] : "";
@@ -262,8 +263,6 @@
             columnLabel.className = "form-label";
             columnLabel.innerHTML = considerationType;
             considerationCol.appendChild(columnLabel);
-
-            console.log(considerationType)
 
             for (let consideration = 0; consideration < numConsiderations; consideration++) {
 

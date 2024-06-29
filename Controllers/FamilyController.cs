@@ -4,10 +4,8 @@ using Chefster.Models;
 using Chefster.Services;
 using Chefster.ViewModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 
 namespace Chefster.Controllers;
@@ -87,7 +85,21 @@ public class FamilyController(
         // create all members and considerations for family
         await CreateMembersAndConsiderations(Family);
 
-        return RedirectToAction("Index", "Chat");
+        // TODO: send confirmation email
+        var body = await _viewToStringService.ViewToStringAsync(
+            "ConfirmationEmail",
+            new { FamilyId = NewFamily.Id }
+        );
+        _emailService.SendEmail(NewFamily.Email, "Thanks for signing up for Chefster!", body);
+
+        var model = new ThankYouViewModel
+        {
+            EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
+            GenerationDay = Family.GenerationDay,
+            GenerationTime = Family.GenerationTime
+        };
+
+        return RedirectToAction("ThankYou", "Index", model);
     }
 
     [HttpDelete("{Id}")]
@@ -229,19 +241,7 @@ public class FamilyController(
                 }
             }
         }
-        
-        // TODO: send confirmation email
-        var body = await _viewToStringService.ViewToStringAsync("ConfirmationEmail", new { FamilyId = NewFamily.Id });
-        _emailService.SendEmail(NewFamily.Email, "Thanks for signing up for Chefster!", body);
-        
-        var model = new ThankYouViewModel
-        {
-            EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
-            GenerationDay = Family.GenerationDay,
-            GenerationTime = Family.GenerationTime
-        };
-
-        return RedirectToAction("ThankYou", "Index", model);
+        return Task.CompletedTask;
     }
 
     private Task UpdateOrCreateMembersAndCreateConsiderations(
