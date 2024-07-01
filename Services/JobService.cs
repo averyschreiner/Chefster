@@ -84,17 +84,17 @@ public class JobService(
             );
         }
 
-        var dishNames = ExtractDishNames(gordonResponse.Data!);
-        _previousRecipeService.HoldRecipes(familyId, dishNames);
+        var recipesToHold = ExtractRecipes(familyId, gordonResponse.Data!);
+        _previousRecipeService.HoldRecipes(familyId, recipesToHold);
         _previousRecipeService.RealeaseRecipes(familyId);
     }
 
     public string BuildGordonPrompt(FamilyModel family)
     {
         string mealCounts = GetMealCountsText(family.NumberOfBreakfastMeals, family.NumberOfLunchMeals, family.NumberOfDinnerMeals);
-        string allConsiderations = GetConsiderationsText(family.Id);
-        List<string> previousRecipes = _previousRecipeService.GetPreviousRecipes(family.Id).Data!;
-        string gordonPrompt = $"Create {mealCounts} recipes, each being {family.FamilySize} servings. Here is a list of the dietary considerations:\n{allConsiderations}DO NOT create any of the following recipes: {string.Join(", ", previousRecipes)}";
+        string dietaryConsiderations = GetDietaryConsiderationsText(family.Id);
+        string previousRecipes = GetPreviousRecipesText(family.Id);
+        string gordonPrompt = $"Create {mealCounts} recipes, each being {family.FamilySize} servings. Here is a list of the dietary considerations:\n{dietaryConsiderations}\n{previousRecipes}";
         Console.WriteLine("Gordon's Prompt:\n" + gordonPrompt);
         return gordonPrompt.ToString();
     }
@@ -137,7 +137,7 @@ public class JobService(
         return mealCountsText;
     }
 
-    private string GetConsiderationsText(string familyId)
+    private string GetDietaryConsiderationsText(string familyId)
     {
         var considerationsText = new StringBuilder();
 
@@ -189,15 +189,74 @@ public class JobService(
         }
     }
 
-    private List<string> ExtractDishNames(GordonResponseModel gordonResponse)
+    private string GetPreviousRecipesText(string familyId)
     {
-        var dishNames = new List<string>();
+        var previousRecipes = _previousRecipeService.GetPreviousRecipes(familyId).Data!;
+        var enjoyedBreakfast = new List<PreviousRecipeModel>();
+        var enjoyedLunch = new List<PreviousRecipeModel>();
+        var enjoyedDinner = new List<PreviousRecipeModel>();
+        var notEnjoyedBreakfast = new List<PreviousRecipeModel>();
+        var notEnjoyedLunch = new List<PreviousRecipeModel>();
+        var notEnjoyedDinner = new List<PreviousRecipeModel>();
+
+        foreach (var recipe in previousRecipes)
+        {
+            // if the user has not given feedback on the recipe, we assume they don't want similar recipes
+            if (recipe.Enjoyed == null)
+            {
+                switch (recipe.MealType)
+                {
+                    case "Breakfast":
+                        notEnjoyedBreakfast.Add(recipe);
+                        break;
+                    case "Lunch":
+                        notEnjoyedLunch.Add(recipe);
+                        break;
+                    case "Dinner":
+                        notEnjoyedDinner.Add(recipe);
+                        break;
+                }
+            }
+            else 
+            {
+                switch (recipe.MealType)
+                {
+                    case "Breakfast":
+                        ((bool)recipe.Enjoyed ? enjoyedBreakfast : notEnjoyedBreakfast).Add(recipe);
+                        break;
+                    case "Lunch":
+                        ((bool)recipe.Enjoyed ? enjoyedLunch : notEnjoyedLunch).Add(recipe);
+                        break;
+                    case "Dinner":
+                        ((bool)recipe.Enjoyed ? enjoyedDinner : notEnjoyedDinner).Add(recipe);
+                        break;
+                }
+            }
+        }
+
+        // this may need reworded
+        return $@"
+        Generate recipes that are similar to the ones listed here, but be certain that you generate different recipes:
+        Breakfast: {string.Join(", ", enjoyedBreakfast)}
+        Lunch: {string.Join(", ", enjoyedLunch)}
+        Dinner: {string.Join(", ", enjoyedDinner)}
+
+        Do not generate recipes these recipes, or recipes that are similar to the ones listed here:
+        Breakfast: {string.Join(", ", notEnjoyedBreakfast)}
+        Lunch: {string.Join(", ", notEnjoyedLunch)}
+        Dinner: {string.Join(", ", notEnjoyedDinner)}
+        ";
+    }
+
+    private List<PreviousRecipeCreateDto> ExtractRecipes(string familyId, GordonResponseModel gordonResponse)
+    {
+        var recipes = new List<PreviousRecipeCreateDto>();
 
         if (gordonResponse.BreakfastRecipes != null)
         {
             foreach (var recipe in gordonResponse.BreakfastRecipes)
             {
-                dishNames.Add(recipe.DishName);
+                recipes.Add(new PreviousRecipeCreateDto { FamilyId = familyId, DishName = recipe.DishName, MealType = "Breakfast" });
             }
         }
 
@@ -205,7 +264,7 @@ public class JobService(
         {
             foreach (var recipe in gordonResponse.LunchRecipes)
             {
-                dishNames.Add(recipe.DishName);
+                recipes.Add(new PreviousRecipeCreateDto { FamilyId = familyId, DishName = recipe.DishName, MealType = "Lunch" });
             }
         }
 
@@ -213,10 +272,10 @@ public class JobService(
         {
             foreach (var recipe in gordonResponse.DinnerRecipes)
             {
-                dishNames.Add(recipe.DishName);
+                recipes.Add(new PreviousRecipeCreateDto { FamilyId = familyId, DishName = recipe.DishName, MealType = "Dinner" });
             }
         }
 
-        return dishNames;
+        return recipes;
     }
 }
