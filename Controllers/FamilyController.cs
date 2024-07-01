@@ -171,7 +171,7 @@ public class FamilyController(
         // Update old members and create new considerations
         await UpdateOrCreateMembersAndCreateConsiderations(familyId, family);
 
-        // may need to redirect them somewhere else
+        // probably redirect to summary page
         return RedirectToAction("Index", "Profile");
     }
 

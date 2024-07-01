@@ -24,11 +24,11 @@
                     <div class="col" style="padding-right: 0px; margin-left: 12px;">
                         <label asp-for="FamilySize">Number of Family Members</label>
                         <div class="row input-group" style="padding-right: 0px;">
-                            <input asp-for="FamilySize" type="number" id="FamilySize" disabled="true"
-                                class="form-control text-center" min="1" max="10" style="width: 20%;" required />
+                            <input asp-for="FamilySize" type="number" id="FamilySize" class="form-control text-center"
+                                min="1" max="10" style="width: 30%;" readonly required />
                             <button onclick="increaseFamilySize()"
-                                style="width: 80%; padding-right: 0px; margin-right: 0px;" id="addMemberButton"
-                                type="button" class="btn btn-secondary form-control">Add
+                                style="width: 70%; padding-right: 0px; margin-right: 0px;" id="addMemberButton"
+                                type="button" class="btn btn-primary form-control">Add
                                 Member</button>
                         </div>
                     </div>

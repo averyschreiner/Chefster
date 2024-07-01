@@ -78,7 +78,7 @@ public class IndexController(
 
     [Authorize]
     [HttpGet]
-    [Route("/updateprofile")]
+    [Route("/profile")]
     public IActionResult UpdateProfile()
     {
         var id = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -168,9 +168,6 @@ public class IndexController(
                         ShouldDelete = false
                     };
 
-                    // var st = JsonConvert.SerializeObject(tooAdd);
-                    // Console.WriteLine(st);
-
                     viewModelMembers.Add(tooAdd);
                 }
             }
@@ -191,8 +188,9 @@ public class IndexController(
         }
         else
         {
-            Console.WriteLine("Family was null :(");
-            return View("GenericError");
+            // if the family was null we redict to the create profile page
+            Console.WriteLine("Family was null");
+            return View("CreateProfile");
         }
     }
 
@@ -405,13 +403,6 @@ public class IndexController(
 
     [Route("/privacy")]
     public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [Authorize]
-    [Route("/profile")]
-    public IActionResult Profile()
     {
         return View();
     }
