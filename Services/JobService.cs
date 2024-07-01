@@ -204,13 +204,13 @@ public class JobService(
             switch (recipe.MealType)
             {
                 case "Breakfast":
-                    ((bool)recipe.Enjoyed ? enjoyedBreakfast : notEnjoyedBreakfast).Add(recipe);
+                    (recipe.Enjoyed ? enjoyedBreakfast : notEnjoyedBreakfast).Add(recipe);
                     break;
                 case "Lunch":
-                    ((bool)recipe.Enjoyed ? enjoyedLunch : notEnjoyedLunch).Add(recipe);
+                    (recipe.Enjoyed ? enjoyedLunch : notEnjoyedLunch).Add(recipe);
                     break;
                 case "Dinner":
-                    ((bool)recipe.Enjoyed ? enjoyedDinner : notEnjoyedDinner).Add(recipe);
+                    (recipe.Enjoyed ? enjoyedDinner : notEnjoyedDinner).Add(recipe);
                     break;
             }
         }
