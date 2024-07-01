@@ -201,36 +201,17 @@ public class JobService(
 
         foreach (var recipe in previousRecipes)
         {
-            // if the user has not given feedback on the recipe, we assume they don't want similar recipes
-            if (recipe.Enjoyed == null)
+            switch (recipe.MealType)
             {
-                switch (recipe.MealType)
-                {
-                    case "Breakfast":
-                        notEnjoyedBreakfast.Add(recipe);
-                        break;
-                    case "Lunch":
-                        notEnjoyedLunch.Add(recipe);
-                        break;
-                    case "Dinner":
-                        notEnjoyedDinner.Add(recipe);
-                        break;
-                }
-            }
-            else 
-            {
-                switch (recipe.MealType)
-                {
-                    case "Breakfast":
-                        ((bool)recipe.Enjoyed ? enjoyedBreakfast : notEnjoyedBreakfast).Add(recipe);
-                        break;
-                    case "Lunch":
-                        ((bool)recipe.Enjoyed ? enjoyedLunch : notEnjoyedLunch).Add(recipe);
-                        break;
-                    case "Dinner":
-                        ((bool)recipe.Enjoyed ? enjoyedDinner : notEnjoyedDinner).Add(recipe);
-                        break;
-                }
+                case "Breakfast":
+                    ((bool)recipe.Enjoyed ? enjoyedBreakfast : notEnjoyedBreakfast).Add(recipe);
+                    break;
+                case "Lunch":
+                    ((bool)recipe.Enjoyed ? enjoyedLunch : notEnjoyedLunch).Add(recipe);
+                    break;
+                case "Dinner":
+                    ((bool)recipe.Enjoyed ? enjoyedDinner : notEnjoyedDinner).Add(recipe);
+                    break;
             }
         }
 
