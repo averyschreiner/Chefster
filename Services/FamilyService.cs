@@ -129,4 +129,26 @@ public class FamilyService(ChefsterDbContext context) : IFamily
             return ServiceResult<FamilyModel>.ErrorResult($"Failed to update Family. Error: {e}");
         }
     }
+
+    public ServiceResult<FamilyModel> UpdateFamilySize(string id, int size)
+    {
+        try
+        {
+            // find the family
+            var existingFam = _context.Families.Find(id);
+            if (existingFam == null)
+            {
+                return ServiceResult<FamilyModel>.ErrorResult("Family does not exist");
+            }
+
+            existingFam.FamilySize = size;
+            _context.SaveChanges();
+
+            return ServiceResult<FamilyModel>.SuccessResult(existingFam);
+        }
+        catch (Exception e)
+        {
+            return ServiceResult<FamilyModel>.ErrorResult($"Failed to update Family. Error: {e}");
+        }
+    }
 }

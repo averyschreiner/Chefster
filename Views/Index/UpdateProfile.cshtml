@@ -196,7 +196,7 @@
                 deleteLabel.id = `shouldDelete${member}label`
                 deleteLabel.setAttribute('for', `shouldDelete${member}`);
 
-                // if its not from the db and its not the first one, allow deletion
+                // if its from the db and its not the first one, allow deletion
                 if (member > 0 && member <= fSize - 1) {
                     deleteWrapper.appendChild(deleteCheck)
                     deleteWrapper.appendChild(deleteLabel)
