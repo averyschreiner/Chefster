@@ -7,12 +7,12 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-12 col-lg-8">
-            <form id="updateform" class="row g-3" action="/api/update/family" method="post">
+            <form id="updateform" class="row g-3" action="/api/update/family" method="post" disabled>
                 <div class="fs-3">
-                    Update Your Profile
+                    Your Profile
                 </div>
                 <hr class="border border-primary border-1 opacity-100">
-                <div class="row" style="margin-right: 0px; padding-right: 0px; padding-left: 0px; margin-left: 0px;">
+                <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <label asp-for="PhoneNumber">Phone Number</label>
@@ -21,15 +21,17 @@
                             <small>Format: +1234567890</small>
                         </div>
                     </div>
-                    <div class="col" style="padding-right: 0px; margin-left: 12px;">
+                    <div class="col pe-0">
                         <label asp-for="FamilySize">Number of Family Members</label>
-                        <div class="row input-group" style="padding-right: 0px;">
-                            <input asp-for="FamilySize" type="number" id="FamilySize" class="form-control text-center"
-                                min="1" max="10" style="width: 30%;" readonly required />
-                            <button onclick="increaseFamilySize()"
-                                style="width: 70%; padding-right: 0px; margin-right: 0px;" id="addMemberButton"
-                                type="button" class="btn btn-primary form-control">Add
-                                Member</button>
+                        <div class="row g-0 input-group pe-0 me-0">
+                            <div class="col-3 pe-0">
+                                <input asp-for="FamilySize" type="number" id="FamilySize" style="border-radius: 0;" class="form-control text-center rounded-start ps-4" min="1" max="10" readonly required />
+                            </div>
+                            <div class="col-9">
+                                <button onclick="increaseFamilySize()" id="addMemberButton" type="button" style="border-radius: 0;" class="btn btn-primary w-100 rounded-end">
+                                    Add Member
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +98,6 @@
 
 @section Scripts {
     <script>
-
         function increaseFamilySize() {
             const familySizeCounter = document.getElementById('FamilySize')
             familySizeCounter.value = parseInt(familySizeCounter.value) + 1
@@ -106,6 +107,29 @@
                 addMemberButton.disabled = true
             }
         }
+
+        function toggleDisable(memberNumber) {
+            let memberForm = document.getElementById("member" + memberNumber)
+            memberForm.classList.toggle('bg-light')
+            const inputs = memberForm.querySelectorAll('input, textarea, select, button');
+
+            const familySizeCounter = document.getElementById('FamilySize')
+            // inputs[0] is the checkbox, if its checked, decrement family size
+            if (inputs[0].checked) {
+                familySizeCounter.value = parseInt(familySizeCounter.value) - 1
+            }
+            else {
+                familySizeCounter.value = parseInt(familySizeCounter.value) + 1
+            }
+    
+            inputs.forEach(element => {
+                // don't disable the 'Delete Member' checkbox
+                if (element.id != `shouldDelete${memberNumber-1}`) {
+                    element.disabled = !element.disabled;
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             // set the time zone
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -184,20 +208,20 @@
                 deleteCheck.type = "checkbox"
                 deleteCheck.name = `Members[${member}].ShouldDelete`
                 deleteCheck.value = true
-                deleteCheck.className = "form-check-input btn-outline-danger"
+                deleteCheck.className = "form-check-input"
                 deleteCheck.style.marginRight = '10px'
                 deleteCheck.style.marginBottom = '4px'
                 deleteCheck.id = `shouldDelete${member}`
+                deleteCheck.addEventListener('click', () => toggleDisable(member + 1))
 
                 const deleteLabel = document.createElement("label");
-                deleteLabel.className = "form-check-label py-1 fs-7 ml-2"
-                deleteLabel.innerHTML = " Delete Member?"
-                deleteLabel.style.color = 'red'
+                deleteLabel.className = "form-check-label ms-1"
+                deleteLabel.innerHTML = " Delete Member"
                 deleteLabel.id = `shouldDelete${member}label`
                 deleteLabel.setAttribute('for', `shouldDelete${member}`);
 
-                // if its from the db and its not the first one, allow deletion
-                if (member > 0 && member <= fSize - 1) {
+                // if its from the db allow deletion
+                if (member <= fSize - 1) {
                     deleteWrapper.appendChild(deleteCheck)
                     deleteWrapper.appendChild(deleteLabel)
                     // else if its not from the db, show remove unused button    
