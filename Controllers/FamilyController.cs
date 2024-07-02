@@ -97,9 +97,9 @@ public class FamilyController(
 
         var model = new ThankYouViewModel
         {
-            EmailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value!,
-            GenerationDay = Family.GenerationDay,
-            GenerationTime = Family.GenerationTime
+            EmailAddress = NewFamily.Email,
+            GenerationDay = NewFamily.GenerationDay,
+            GenerationTime = NewFamily.GenerationTime
         };
 
         return RedirectToAction("ThankYou", "Index", model);
